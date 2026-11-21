@@ -24,7 +24,7 @@ import {
   CheckCircle, XCircle, Loader, Edit2, Save, LogOut,
   UserCircle, Trash2, UserPlus, Mail, Unlock, FileText,
 } from "lucide-react"
-import { adminSignOut } from "@/lib/admin-auth"
+import { adminSignOut, adminSupabase } from "@/lib/admin-auth"
 import { supabase } from "@/lib/supabase"
 import {
   getAdminStats,
@@ -1013,12 +1013,11 @@ function PermissionsTab() {
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<"all" | "pending" | "approved" | "inactive">("pending")
   const [saving, setSaving] = useState<string | null>(null)
-  const [notifySending, setNotifySending] = useState<string | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
     try {
-      let query = supabase
+      let query = adminSupabase
         .from("users")
         .select("id, email, full_name, display_name, created_at, is_verified, approved_at, approved_by, platform_role")
         .order("created_at", { ascending: false })
@@ -1036,8 +1035,9 @@ function PermissionsTab() {
   async function handleApprove(userId: string, email: string) {
     setSaving(userId)
     try {
-      await supabase.from("users").update({ is_verified: true, approved_at: new Date().toISOString(), approved_by: "admin" }).eq("id", userId)
-      await sendNotification(email, "approved")
+      // The approval email is sent by the send-approval edge function via a database webhook on users.
+      const { error } = await adminSupabase.from("users").update({ is_verified: true, approved_at: new Date().toISOString(), approved_by: "admin" }).eq("id", userId)
+      if (error) throw error
       await load()
     } catch (e: any) { alert(e.message) }
     finally { setSaving(null) }
@@ -1046,7 +1046,7 @@ function PermissionsTab() {
   async function handleDeny(userId: string, email: string) {
     if (!confirm("Deny access to this user?")) return
     setSaving(userId)
-    try { await sendNotification(email, "denied"); await load() }
+    try { await load() }
     catch (e: any) { alert(e.message) }
     finally { setSaving(null) }
   }
@@ -1055,24 +1055,13 @@ function PermissionsTab() {
     if (!confirm("Revoke access for this user?")) return
     setSaving(userId)
     try {
-      await supabase.from("users").update({ is_verified: false, approved_at: null }).eq("id", userId)
-      await sendNotification(email, "revoked")
+      const { error } = await adminSupabase.from("users").update({ is_verified: false, approved_at: null }).eq("id", userId)
+      if (error) throw error
       await load()
     } catch (e: any) { alert(e.message) }
     finally { setSaving(null) }
   }
 
-  async function sendNotification(email: string, status: string) {
-    setNotifySending(email)
-    try {
-      await fetch("/api/send-access-notification", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, status }),
-      })
-    } catch { /* non-fatal */ }
-    finally { setNotifySending(null) }
-  }
 
   const pending = users.filter(u => !u.is_verified && !u.approved_at)
 
@@ -1110,7 +1099,7 @@ function PermissionsTab() {
                 onDeny={() => handleDeny(u.id, u.email)}
                 onRevoke={() => handleRevoke(u.id, u.email)}
                 saving={saving === u.id}
-                notifySending={notifySending === u.email}
+                notifySending={false}
               />
             ))}
           </div>
