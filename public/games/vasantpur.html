@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Vasantpur · SCRY</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --ink:#f2ece4;--ink2:#c8bca8;--ink3:#8c7c68;--ink4:#564838;--ink5:#36281c;
+  --page:#0f0d0b;--page2:#161310;--page3:#1e1a16;--page4:#272218;
+  --rule:#272018;--rule2:#383028;--rule3:#484038;
+  --accent:#e8b870;--accent2:#c88848;--accent3:#a87030;
+  --blue:#68b8f8;--green:#58c87a;--red:#e87070;--amber:#e8a838;
+  --scry:#c898ff;--scry-bg:rgba(200,152,255,.09);--scry-rule:rgba(200,152,255,.22);
+  --sky1:#8a2e06;--sky2:#ffaa38;--bld:#241808;--gnd:#ede0ca;--gnd2:#5a380e;
+}
+html{height:100%;background:var(--page);overscroll-behavior-y:none}
+body{min-height:100dvh;background:var(--page);color:var(--ink);
+  font-family:'Georgia','Times New Roman',serif;font-size:16px;line-height:1.8;
+  overflow-x:hidden;-webkit-font-smoothing:antialiased;
+  padding-bottom:env(safe-area-inset-bottom);overscroll-behavior-y:none}
+#shell{min-height:100dvh;display:flex;flex-direction:column;max-width:660px;margin:0 auto}
+#topbar{position:sticky;top:0;z-index:50;background:rgba(15,13,11,.92);
+  border-bottom:.5px solid var(--rule);padding:10px 18px;
+  display:flex;align-items:center;justify-content:space-between;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.tb-logo{font-family:'Courier New',monospace;font-size:10px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--accent);font-weight:700}
+.tb-mid{position:absolute;left:50%;transform:translateX(-50%);display:flex;gap:5px}
+.bp{width:5px;height:5px;border-radius:50%;background:var(--rule3);transition:all .4s}
+.bp.dn{background:var(--ink4)}.bp.on{width:18px;border-radius:3px;background:var(--accent)}
+.tb-r{font-family:'Courier New',monospace;font-size:10px;color:var(--ink4);letter-spacing:.04em}
+#scene{position:relative;flex-shrink:0;line-height:0;overflow:hidden}
+#scene svg{display:block;width:100%;max-height:38vh}
+#sfade{position:absolute;inset:0;background:var(--page);opacity:0;pointer-events:none;transition:opacity .65s;z-index:2}
+#stime{position:absolute;bottom:0;left:0;right:0;z-index:3;padding:10px 18px 12px;
+  background:linear-gradient(transparent,rgba(15,13,11,.96));
+  font-family:'Courier New',monospace;font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink3)}
+#narr{flex:1;padding:22px 18px 8px}
+.p{font-size:15.5px;line-height:1.88;color:var(--ink2);margin-bottom:11px;opacity:0;font-family:'Georgia',serif}
+.p.in{animation:fsin .5s ease forwards}
+.p em{color:var(--ink);font-style:italic}.p strong{color:var(--ink);font-weight:normal}
+.p.aside{color:var(--ink3);font-style:italic;border-left:2px solid var(--rule2);padding-left:12px;font-size:14.5px}
+@keyframes fsin{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.notif{border:.5px solid var(--rule2);border-left:3px solid var(--blue);border-radius:10px;
+  padding:11px 14px;background:var(--page3);margin:14px 0;opacity:0;transition:opacity .4s}
+.notif.in{opacity:1}
+.notif-app{font-family:'Courier New',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink4);margin-bottom:3px}
+.notif-txt{font-size:14.5px;color:var(--ink);line-height:1.4}
+.src{border:.5px solid var(--rule2);border-radius:10px;overflow:hidden;margin:14px 0;opacity:0;transition:opacity .35s}
+.src.in{opacity:1}
+.src-hd{padding:10px 14px;background:var(--page3);border-bottom:.5px solid var(--rule)}
+.src-pub{font-family:'Courier New',monospace;font-size:9px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink4);margin-bottom:3px}
+.src-hl{font-size:15px;color:var(--ink);line-height:1.35}
+.src-bd{padding:14px;background:var(--page2)}
+.src-bd p{font-size:13px;line-height:1.82;color:var(--ink2);margin-bottom:9px;font-family:'Georgia',serif}
+.src-bd p:last-child{margin-bottom:0}.src-bd strong{color:var(--ink)}
+.absent{font-family:'Courier New',monospace;font-size:11px;color:var(--amber);border-bottom:1px dashed rgba(232,168,56,.35)}
+.sr{padding-bottom:9px;margin-bottom:9px;border-bottom:.5px solid var(--rule)}
+.sr:last-child{padding-bottom:0;margin-bottom:0;border-bottom:none}
+.sr-pub{font-family:'Courier New',monospace;font-size:9px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink4);margin-bottom:2px}
+.sr-hl{font-size:13px;color:var(--ink);line-height:1.35;margin-bottom:2px}
+.sr-ex{font-size:12px;color:var(--ink2);line-height:1.5}
+.chat{margin:14px 0}
+.crow{display:flex;gap:9px;margin-bottom:8px;align-items:flex-start;opacity:0}
+.crow.in{animation:bubin .4s cubic-bezier(.34,1.3,.64,1) forwards}
+@keyframes bubin{from{opacity:0;transform:translateX(-9px)}to{opacity:1;transform:translateX(0)}}
+.cav{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+.cbub{border:.5px solid var(--rule2);border-radius:3px 10px 10px 10px;padding:8px 12px;max-width:90%;background:var(--page3)}
+.cname{font-family:'Courier New',monospace;font-size:8.5px;letter-spacing:.07em;text-transform:uppercase;font-weight:700;margin-bottom:4px}
+.ctxt{font-size:13px;color:var(--ink2);line-height:1.55}
+.typing{display:none;gap:4px;align-items:center;padding:9px 13px;background:var(--page3);border:.5px solid var(--rule2);border-radius:3px 10px 10px 10px;width:fit-content;margin-bottom:8px}
+.typing.on{display:flex}
+.td{width:5px;height:5px;border-radius:50%;background:var(--ink4)}
+.td:nth-child(1){animation:db .9s infinite}.td:nth-child(2){animation:db .9s infinite .2s}.td:nth-child(3){animation:db .9s infinite .4s}
+@keyframes db{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-4px)}}
+.vn-row{display:flex;align-items:center;gap:8px;margin-bottom:5px}
+.vn-play{width:26px;height:26px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer}
+.vn-play:active{transform:scale(.92)}
+.vnw{flex:1;display:flex;align-items:center;gap:2px;height:17px}
+.vb{width:2.5px;border-radius:1px;background:var(--rule3);transform-origin:center}
+.vb.on{background:var(--green)}
+.vts{font-family:'Courier New',monospace;font-size:9px;color:var(--ink4)}
+.vtrans{font-size:12px;color:var(--ink3);font-style:italic;line-height:1.55;margin-top:5px;border-left:2px solid var(--rule2);padding-left:9px}
+.cmp{border:.5px solid var(--rule2);border-radius:10px;overflow:hidden;margin:14px 0}
+.cmp-hd{padding:8px 14px;background:var(--page3);border-bottom:.5px solid var(--rule);font-family:'Courier New',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink4)}
+.cmp-cols{display:grid;grid-template-columns:1fr 1fr}
+.cmp-col{padding:11px 13px;font-size:12px;line-height:1.68;color:var(--ink2)}
+.cmp-col:first-child{border-right:.5px solid var(--rule)}
+.cmp-pub{font-family:'Courier New',monospace;font-size:8.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink4);margin-bottom:4px}
+.cmp-col p{margin-bottom:6px}.cmp-col p:last-child{margin-bottom:0}
+.match{background:rgba(232,168,56,.16);border-radius:2px;padding:0 2px}
+.mirror{border-left:3px solid var(--accent2);border-radius:0 10px 10px 0;padding:13px 15px;background:var(--page3);margin:16px 0;opacity:0;transition:opacity .4s}
+.mirror.in{opacity:1}
+.mirror-lbl{font-family:'Courier New',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent2);margin-bottom:6px}
+.mirror-txt{font-size:14px;color:var(--ink);line-height:1.72;font-family:'Georgia',serif}
+.mirror-txt em{font-style:italic;color:var(--ink2)}
+.mirror-sub{font-size:12px;color:var(--ink3);margin-top:6px;font-style:italic;line-height:1.55}
+.scry{border:.5px solid var(--scry-rule);border-radius:10px;background:var(--scry-bg);padding:14px;margin:16px 0;opacity:0;transition:opacity .4s}
+.scry.in{opacity:1}
+.scry-hd{display:flex;align-items:center;gap:7px;margin-bottom:5px}
+.scry-dot{width:7px;height:7px;border-radius:50%;background:var(--scry);flex-shrink:0}
+.scry-lbl{font-family:'Courier New',monospace;font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--scry);font-weight:700}
+.scry-sub{font-size:12.5px;color:var(--ink3);margin-bottom:12px;font-style:italic;line-height:1.55}
+.scry-row{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.scry-rl{font-size:11px;color:var(--ink3);width:90px;flex-shrink:0;font-family:'Courier New',monospace}
+.scry-trk{flex:1;height:4px;border-radius:2px;background:var(--rule2);position:relative}
+.scry-mid{position:absolute;left:50%;top:-3px;width:.5px;height:10px;background:var(--rule3)}
+.scry-fill{position:absolute;top:0;height:100%;border-radius:2px;transition:width .9s cubic-bezier(.34,1.28,.64,1),left .9s cubic-bezier(.34,1.28,.64,1)}
+.scry-val{font-family:'Courier New',monospace;font-size:10px;color:var(--ink4);width:38px;text-align:right;flex-shrink:0}
+.scry-pubs{display:flex;flex-wrap:wrap;gap:4px;margin:9px 0 6px}
+.scry-pub{font-family:'Courier New',monospace;font-size:9px;padding:2px 8px;border-radius:4px;border:.5px solid var(--rule2);color:var(--ink3);background:var(--page2)}
+.scry-pub.silent{border-color:rgba(232,168,56,.4);color:var(--amber);background:rgba(232,168,56,.06)}
+.scry-insight{font-size:13px;color:var(--ink2);line-height:1.68;margin-top:9px;padding-top:9px;border-top:.5px solid var(--scry-rule);font-style:italic}
+.scry-missing{border:.5px solid var(--scry-rule);border-radius:10px;padding:12px 14px;background:var(--scry-bg);margin:14px 0}
+.scry-miss-body{font-size:13px;color:var(--ink2);line-height:1.65;margin-bottom:8px}
+.scry-miss-body strong{color:var(--scry)}
+.scry-skip{font-family:'Courier New',monospace;font-size:10px;color:var(--ink4);background:none;border:none;cursor:pointer;padding:2px 0;letter-spacing:.04em}
+.anno-section{margin-top:12px;padding-top:11px;border-top:.5px solid var(--scry-rule)}
+.anno-q{font-size:13.5px;color:var(--ink2);line-height:1.65;margin-bottom:10px;font-style:italic}
+.anno-opts{display:flex;flex-direction:column;gap:5px}
+.ao{border:.5px solid var(--scry-rule);border-radius:8px;padding:10px 12px;background:var(--page2);cursor:pointer;transition:all .15s;text-align:left;width:100%;font-family:'Georgia',serif}
+.ao:active,.ao:hover{background:var(--page3);border-color:var(--scry)}
+.ao.sel{border-color:var(--scry);background:var(--scry-bg)}.ao.dim{opacity:.2;pointer-events:none}
+.ao-main{font-size:13px;color:var(--ink);line-height:1.4;margin-bottom:2px}
+.ao-sub{font-size:11px;color:var(--ink4);font-family:'Courier New',monospace}
+.anno-res{border:.5px solid var(--scry-rule);border-radius:8px;padding:12px 13px;background:var(--scry-bg);margin-top:10px;display:none}
+.ab-row{display:flex;align-items:center;gap:7px;margin:5px 0}
+.ab-l{font-size:11px;color:var(--ink3);width:115px;flex-shrink:0;font-family:'Courier New',monospace}
+.ab-t{flex:1;height:5px;border-radius:3px;background:var(--rule2);overflow:hidden}
+.ab-f{height:100%;border-radius:3px;background:var(--scry);transition:width 1.2s ease}
+.anno-note{font-size:12.5px;color:var(--ink2);line-height:1.65;margin-top:9px;font-style:italic}
+.dec{margin:16px 0}
+.dec-q{font-size:15px;color:var(--ink);line-height:1.65;margin-bottom:7px;padding-left:13px;border-left:3px solid var(--accent2)}
+.dec-ctx{font-size:13px;color:var(--ink3);margin-bottom:12px;font-style:italic;line-height:1.55;padding-left:13px}
+.choices{display:flex;flex-direction:column;gap:6px}
+.ch{border:.5px solid var(--rule2);border-radius:10px;padding:12px 15px;background:var(--page2);cursor:pointer;transition:all .22s;text-align:left;width:100%;font-family:'Georgia',serif;opacity:0;transform:translateY(4px)}
+.ch.in{opacity:1;transform:translateY(0)}.ch:active,.ch:hover{border-color:var(--rule3);background:var(--page3);transform:translateX(4px)}
+.ch.sel{border-color:var(--accent);background:var(--page3);transform:translateX(0)}.ch.dim{opacity:.16;pointer-events:none;transform:none}
+.ch-main{font-size:14px;color:var(--ink);line-height:1.5;margin-bottom:2px}
+.ch-sub{font-size:11px;color:var(--ink4);font-family:'Courier New',monospace;margin-top:3px}
+.stmt{border:.5px solid var(--rule2);border-radius:10px;padding:16px;background:var(--page2);margin:14px 0;font-size:14.5px;line-height:1.88;color:var(--ink2)}
+.stmt p{margin-bottom:11px}.stmt p:last-child{margin-bottom:0}
+.stmt .ed{background:rgba(104,184,248,.1);border-radius:3px;padding:0 3px;cursor:pointer;border-bottom:1px solid rgba(104,184,248,.28);color:var(--ink);transition:all .2s}
+.stmt .ed:hover{background:rgba(104,184,248,.2)}.stmt .ed.changed{background:rgba(88,200,122,.09);border-bottom-color:rgba(88,200,122,.3)}
+.obar{display:flex;height:10px;border-radius:5px;overflow:hidden;margin:10px 0}
+.ob{height:100%;transition:width 1.8s ease}
+.oleg{display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.ole{display:flex;align-items:center;gap:5px;font-family:'Courier New',monospace;font-size:10px;color:var(--ink4)}
+.olc{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.ocard{border:.5px solid var(--rule2);border-radius:10px;padding:13px 15px;background:var(--page3);margin-bottom:10px}
+.ocard-tag{font-family:'Courier New',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;margin-bottom:5px;display:block}
+.ocard-title{font-size:14px;color:var(--ink);margin-bottom:5px}
+.ocard-desc{font-size:13px;color:var(--ink2);line-height:1.7;font-family:'Georgia',serif}
+.profile{border:.5px solid var(--accent2);border-radius:12px;padding:16px;background:var(--page3);margin:14px 0}
+.profile-lbl{font-family:'Courier New',monospace;font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent2);margin-bottom:12px}
+.prow{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;padding-bottom:10px;border-bottom:.5px solid var(--rule2)}
+.prow:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none}
+.prow-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:6px}
+.prow-label{font-family:'Courier New',monospace;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3);margin-bottom:3px}
+.prow-val{font-size:13.5px;color:var(--ink);line-height:1.55;font-family:'Georgia',serif}
+.prow-val em{color:var(--ink2);font-style:italic}
+.proximity{border:.5px solid var(--scry-rule);border-radius:10px;padding:14px;background:var(--scry-bg);margin:14px 0}
+.proximity-lbl{font-family:'Courier New',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--scry);margin-bottom:7px}
+.proximity-txt{font-size:13.5px;color:var(--ink2);line-height:1.72;font-family:'Georgia',serif}
+.proximity-txt strong{color:var(--ink)}.proximity-txt em{color:var(--ink3);font-style:italic}
+.ctn{width:100%;padding:11px;border-radius:9px;border:.5px solid var(--rule2);background:none;color:var(--ink4);font-size:12px;font-family:'Courier New',monospace;letter-spacing:.05em;cursor:pointer;transition:all .18s;margin-top:10px;opacity:0;pointer-events:none}
+.ctn.rdy{opacity:1;pointer-events:auto;color:var(--ink3)}.ctn:hover{background:var(--page3);color:var(--ink);border-color:var(--rule3)}
+.nxt{width:100%;padding:13px;border-radius:10px;background:var(--accent3);color:var(--page);border:none;font-size:12px;font-family:'Courier New',monospace;letter-spacing:.07em;cursor:pointer;transition:all .18s;margin-top:8px}
+.nxt:hover,.nxt:active{background:var(--accent2)}
+#hw{margin-top:10px;padding-top:9px;border-top:.5px solid var(--rule)}
+.htb{font-family:'Courier New',monospace;font-size:10px;color:var(--ink4);cursor:pointer;background:none;border:none;padding:0;letter-spacing:.05em;transition:color .15s}
+.htb:hover{color:var(--ink3)}
+.htxt{font-size:13px;color:var(--ink2);line-height:1.65;margin-top:8px;padding:10px 13px;border-radius:8px;background:var(--page3);border:.5px solid var(--rule2);display:none;font-style:italic}
+.htxt.on{display:block}
+.spacer{height:36px}
+@keyframes sunp{0%,100%{opacity:.32}50%{opacity:.52}}
+@keyframes steam{0%{opacity:0}40%{opacity:.6}100%{opacity:0;transform:translateY(-18px)}}
+@keyframes bfly{from{transform:translateX(-60px)}to{transform:translateX(750px) translateY(-22px)}}
+@keyframes twink{0%,100%{opacity:.35}50%{opacity:.88}}
+@keyframes lp{0%,100%{opacity:.55}50%{opacity:.82}}
+@keyframes hp{0%,100%{opacity:.48}50%{opacity:.76}}
+@keyframes cm{from{transform:translateX(0)}to{transform:translateX(100px)}}
+@keyframes sapp{from{opacity:0}to{opacity:.9}}
+@keyframes phshk{0%,100%{transform:translate(0,0)}15%{transform:translate(-2px,1px) rotate(-2deg)}35%{transform:translate(2px,-1px) rotate(2deg)}55%{transform:translate(-1px,0)}75%{transform:translate(1px,0)}}
+@keyframes wba{0%,100%{transform:scaleY(.2)}50%{transform:scaleY(1)}}
+@keyframes sg{from{opacity:.48}to{opacity:0}}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+</style>
+</head>
+<body>
+<div id="shell">
+  <div id="topbar">
+    <span class="tb-logo">SCRY</span>
+    <div class="tb-mid" id="bdots"></div>
+    <span class="tb-r" id="tbb">Loading...</span>
+  </div>
+  <div id="scene"><div id="sfade"></div><div id="stime"></div></div>
+  <div id="narr">
+    <div id="hw">
+      <button class="htb" id="htb" onclick="tH()">? hint</button>
+      <div class="htxt" id="htxt"></div>
+    </div>
+  </div>
+  <div class="spacer"></div>
+</div>
+<script>
+
+// ═══════════════════════════════════════════════════════════════════
+// SCENE RENDERER
+// ═══════════════════════════════════════════════════════════════════
+
+const PALETTES = {
+  warm_dawn:    { sky1:'#8a2e06', sky2:'#ffaa38', bld:'#241808', gnd:'#ede0ca', gnd2:'#5a380e', stars:false },
+  blue_night:   { sky1:'#060418', sky2:'#160e40', bld:'#120c08', gnd:'#100c08', gnd2:'#2c1808', stars:true  },
+  amber_evening:{ sky1:'#7a2c06', sky2:'#ff9c2a', bld:'#241408', gnd:'#281c0a', gnd2:'#5a380e', stars:false },
+  grey_overcast:{ sky1:'#1a1a20', sky2:'#3a3a48', bld:'#181820', gnd:'#20202c', gnd2:'#28283a', stars:false },
+  harsh_noon:   { sky1:'#1a3a6a', sky2:'#4a9aee', bld:'#241808', gnd:'#ddd4b0', gnd2:'#5a480e', stars:false },
+  deep_evening: { sky1:'#0a0820', sky2:'#201848', bld:'#0c0a10', gnd:'#100c08', gnd2:'#1c1420', stars:true  },
+}
+
+const BACKDROPS = {
+  city_skyline: (p) => `
+    <rect x="0" y="148" width="40" height="70" fill="${p.bld}"/>
+    <rect x="44" y="132" width="28" height="86" fill="${p.bld}"/>
+    <rect x="76" y="150" width="46" height="68" fill="${p.bld}"/>
+    <rect x="126" y="136" width="34" height="82" fill="${p.bld}"/>
+    <rect x="164" y="150" width="26" height="68" fill="${p.bld}"/>
+    <rect x="194" y="118" width="22" height="100" fill="${p.bld}"/>
+    <rect x="220" y="134" width="54" height="84" fill="${p.bld}"/>
+    <rect x="278" y="146" width="28" height="72" fill="${p.bld}"/>
+    <rect x="310" y="154" width="112" height="64" fill="${p.bld}" opacity=".85"/>
+    <rect x="430" y="124" width="30" height="94" fill="${p.bld}"/>
+    <rect x="464" y="140" width="50" height="78" fill="${p.bld}"/>
+    <rect x="518" y="122" width="26" height="96" fill="${p.bld}"/>
+    <rect x="548" y="142" width="95" height="76" fill="${p.bld}"/>
+    <rect x="648" y="130" width="52" height="88" fill="${p.bld}"/>`,
+  coastal_port: (p) => `
+    <rect x="0" y="160" width="700" height="58" fill="#0a1e3c" opacity=".82"/>
+    <rect x="20" y="148" width="60" height="70" fill="${p.bld}"/>
+    <rect x="88" y="138" width="44" height="80" fill="${p.bld}"/>
+    <rect x="540" y="118" width="20" height="100" fill="${p.bld}"/>
+    <rect x="538" y="114" width="24" height="5" rx="2" fill="${p.bld}"/>
+    <line x1="550" y1="118" x2="550" y2="60" stroke="${p.bld}" stroke-width="1.5"/>
+    <line x1="550" y1="75" x2="580" y2="85" stroke="${p.bld}" stroke-width="1" opacity=".6"/>
+    <line x1="550" y1="90" x2="582" y2="97" stroke="${p.bld}" stroke-width="1" opacity=".5"/>
+    <rect x="480" y="130" width="55" height="88" fill="${p.bld}"/>
+    <rect x="600" y="140" width="100" height="78" fill="${p.bld}"/>`,
+  agricultural_fields: (p) => `
+    <rect x="0" y="158" width="700" height="60" fill="#1a2e0e" opacity=".9"/>
+    <rect x="0" y="152" width="700" height="10" fill="#243808" opacity=".7"/>
+    <line x1="0" y1="158" x2="700" y2="158" stroke="#2a4410" stroke-width="1.5"/>
+    <line x1="140" y1="158" x2="140" y2="218" stroke="#2a4410" stroke-width="1"/>
+    <line x1="280" y1="158" x2="280" y2="218" stroke="#2a4410" stroke-width="1"/>
+    <line x1="420" y1="158" x2="420" y2="218" stroke="#2a4410" stroke-width="1"/>
+    <line x1="560" y1="158" x2="560" y2="218" stroke="#2a4410" stroke-width="1"/>
+    <circle cx="54" cy="148" r="28" fill="#1a2e0e"/>
+    <circle cx="32" cy="156" r="20" fill="#142408"/>
+    <rect x="50" y="172" width="8" height="18" fill="#381e08"/>
+    <rect x="380" y="108" width="38" height="50" fill="${p.bld}"/>
+    <rect x="385" y="104" width="28" height="6" fill="${p.bld}"/>`,
+  government_complex: (p) => `
+    <rect x="180" y="78" width="340" height="140" fill="${p.bld}"/>
+    <rect x="186" y="84" width="328" height="134" fill="${p.bld}" opacity=".7"/>
+    <rect x="196" y="98" width="20" height="30" rx="1" fill="#1c1408"/>
+    <rect x="224" y="98" width="20" height="30" rx="1" fill="#1c1408"/>
+    <rect x="252" y="98" width="20" height="30" rx="1" fill="#1c1408"/>
+    <rect x="280" y="98" width="20" height="30" rx="1" fill="#1c1408"/>
+    <rect x="400" y="98" width="20" height="30" rx="1" fill="#1c1408"/>
+    <rect x="428" y="98" width="20" height="30" rx="1" fill="#1c1408"/>
+    <rect x="456" y="98" width="20" height="30" rx="1" fill="#1c1408"/>
+    <rect x="196" y="138" width="20" height="30" rx="1" fill="#1c1408"/>
+    <rect x="224" y="138" width="20" height="30" rx="1" fill="#1c1408"/>
+    <rect x="400" y="138" width="20" height="30" rx="1" fill="#1c1408"/>
+    <rect x="428" y="138" width="20" height="30" rx="1" fill="#1c1408"/>
+    <rect x="316" y="86" width="68" height="8" rx="3" fill="${p.bld}" opacity=".5"/>
+    <rect x="0" y="148" width="180" height="70" fill="${p.bld}"/>
+    <rect x="520" y="148" width="180" height="70" fill="${p.bld}"/>`,
+  hills_and_town: (p) => `
+    <ellipse cx="120" cy="180" rx="180" ry="90" fill="#1a2e0e" opacity=".8"/>
+    <ellipse cx="580" cy="190" rx="200" ry="80" fill="#142408" opacity=".75"/>
+    <ellipse cx="350" cy="200" rx="160" ry="60" fill="#1a2e0e" opacity=".65"/>
+    <rect x="60" y="150" width="28" height="68" fill="${p.bld}"/>
+    <rect x="95" y="158" width="22" height="60" fill="${p.bld}"/>
+    <rect x="124" y="145" width="34" height="73" fill="${p.bld}"/>
+    <rect x="480" y="152" width="26" height="66" fill="${p.bld}"/>
+    <rect x="514" y="145" width="38" height="73" fill="${p.bld}"/>`,
+  bazaar_and_market: (p) => `
+    <rect x="0" y="134" width="700" height="84" fill="${p.bld}"/>
+    <rect x="30" y="118" width="80" height="100" fill="${p.bld}" opacity=".9"/>
+    <rect x="118" y="124" width="60" height="94" fill="${p.bld}"/>
+    <rect x="186" y="114" width="50" height="104" fill="${p.bld}"/>
+    <rect x="244" y="128" width="90" height="90" fill="${p.bld}"/>
+    <rect x="342" y="118" width="70" height="100" fill="${p.bld}"/>
+    <rect x="420" y="124" width="55" height="94" fill="${p.bld}"/>
+    <rect x="483" y="114" width="80" height="104" fill="${p.bld}"/>
+    <rect x="571" y="128" width="60" height="90" fill="${p.bld}"/>
+    <rect x="640" y="118" width="60" height="100" fill="${p.bld}"/>
+    <rect x="0" y="210" width="700" height="10" fill="${p.gnd2}"/>
+    <rect x="30" y="132" width="80" height="6" rx="2" fill="#2A7FBF" opacity=".5"/>
+    <rect x="118" y="138" width="60" height="5" rx="2" fill="#3592D8" opacity=".45"/>
+    <rect x="186" y="128" width="50" height="5" rx="2" fill="#1B6BA8" opacity=".4"/>
+    <rect x="244" y="140" width="90" height="6" rx="2" fill="#2A7FBF" opacity=".5"/>`,
+  newsroom_interior: (p) => `
+    <rect width="700" height="280" fill="#18140e"/>
+    <rect x="0" y="0" width="700" height="24" fill="#201c14"/>
+    <rect x="60" y="4" width="64" height="8" rx="3" fill="#f0e098" opacity=".5" style="animation:lp 3s ease infinite"/>
+    <rect x="200" y="4" width="64" height="8" rx="3" fill="#f0e098" opacity=".45" style="animation:lp 3s ease infinite .8s"/>
+    <rect x="340" y="4" width="64" height="8" rx="3" fill="#f0e098" opacity=".48" style="animation:lp 3s ease infinite 1.6s"/>
+    <rect x="480" y="4" width="64" height="8" rx="3" fill="#f0e098" opacity=".43" style="animation:lp 3s ease infinite 2.4s"/>
+    <rect x="80" y="50" width="240" height="140" rx="4" fill="#201c14"/>
+    <rect x="88" y="58" width="224" height="124" rx="3" fill="#0c1824" opacity=".9" style="animation:lp 4s ease infinite"/>
+    <rect x="100" y="68" width="200" height="16" rx="2" fill="#2a4060" opacity=".7"/>
+    <rect x="100" y="90" width="160" height="8" rx="2" fill="#1a3050" opacity=".6"/>
+    <rect x="100" y="104" width="180" height="8" rx="2" fill="#1a3050" opacity=".5"/>
+    <rect x="380" y="60" width="200" height="120" rx="4" fill="#201c14"/>
+    <rect x="388" y="68" width="184" height="104" rx="3" fill="#0c1824" opacity=".9"/>
+    <rect x="400" y="78" width="160" height="14" rx="2" fill="#2a4060" opacity=".6"/>`,
+  court_corridor: (p) => `
+    <rect width="700" height="280" fill="#2a2018"/>
+    <polygon points="0,280 700,280 540,140 160,140" fill="#362c20"/>
+    <polygon points="0,0 160,140 0,280" fill="#2c2416"/>
+    <polygon points="700,0 540,140 700,280" fill="#362c20"/>
+    <polygon points="0,0 700,0 540,140 160,140" fill="#1e1a12"/>
+    <rect x="0" y="30" width="16" height="78" rx="2" fill="#3a2e1e"/>
+    <rect x="22" y="30" width="16" height="78" rx="2" fill="#3a2e1e"/>
+    <rect x="44" y="30" width="16" height="78" rx="2" fill="#3a2e1e"/>
+    <rect x="66" y="30" width="16" height="78" rx="2" fill="#3a2e1e"/>
+    <rect x="0" y="120" width="16" height="80" rx="2" fill="#3a2e1e"/>
+    <rect x="22" y="120" width="16" height="80" rx="2" fill="#3a2e1e"/>
+    <rect x="44" y="120" width="16" height="80" rx="2" fill="#3a2e1e"/>
+    <rect x="66" y="120" width="16" height="80" rx="2" fill="#3a2e1e"/>
+    <rect x="560" y="18" width="124" height="95" rx="3" fill="#6a4c28" opacity=".68"/>`,
+  hospital_corridor: (p) => `
+    <rect width="700" height="280" fill="#141820"/>
+    <defs><linearGradient id="hgrad" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#0c1018"/><stop offset="50%" stop-color="#1a2030"/><stop offset="100%" stop-color="#0c1018"/></linearGradient></defs>
+    <rect x="0" y="0" width="700" height="280" fill="url(#hgrad)"/>
+    <rect x="0" y="0" width="700" height="14" fill="#1a2030"/>
+    <rect x="80" y="4" width="120" height="6" rx="3" fill="#a0e8f0" opacity=".6" style="animation:lp 3.5s ease infinite"/>
+    <rect x="300" y="4" width="100" height="6" rx="3" fill="#a0e8f0" opacity=".5" style="animation:lp 3.5s ease infinite 1s"/>
+    <rect x="500" y="4" width="120" height="6" rx="3" fill="#a0e8f0" opacity=".55" style="animation:lp 3.5s ease infinite 2s"/>
+    <rect x="0" y="100" width="12" height="180" fill="#1a2030"/>
+    <rect x="688" y="100" width="12" height="180" fill="#1a2030"/>
+    <rect x="100" y="80" width="80" height="120" rx="2" fill="#0c1020"/>
+    <rect x="520" y="80" width="80" height="120" rx="2" fill="#0c1020"/>`,
+  village_square: (p) => `
+    <rect x="0" y="155" width="700" height="63" fill="#1a1808"/>
+    <circle cx="60" cy="148" r="32" fill="#1a2e0e"/>
+    <circle cx="38" cy="158" r="22" fill="#142408"/>
+    <rect x="56" y="175" width="9" height="22" fill="#381e08"/>
+    <circle cx="640" cy="152" r="28" fill="#1a2e0e"/>
+    <circle cx="664" cy="160" r="20" fill="#142408"/>
+    <rect x="180" y="100" width="48" height="78" fill="${p.bld}"/>
+    <rect x="184" y="95" width="40" height="8" rx="3" fill="${p.bld}"/>
+    <rect x="190" y="108" width="12" height="16" rx="1" fill="#1c1408"/>
+    <rect x="210" y="108" width="12" height="16" rx="1" fill="#1c1408"/>
+    <rect x="440" y="112" width="36" height="66" fill="${p.bld}"/>
+    <rect x="444" y="108" width="28" height="7" rx="2" fill="${p.bld}"/>`,
+}
+
+const FG_OBJECTS = {
+  phone_with_notification: `
+    <g id="phgrp"><rect id="phbd" x="564" y="228" width="70" height="40" rx="7" fill="#181210"/>
+    <rect id="phscr" x="567" y="231" width="64" height="34" rx="5" fill="#080806"/>
+    <g id="phnb" opacity="0"><rect x="567" y="231" width="64" height="18" rx="4" fill="#1a2c48"/>
+    <text x="599" y="243" text-anchor="middle" font-family="Courier New" font-size="7" fill="#90b8e0">Breaking</text></g></g>
+    <rect id="phglow" x="557" y="221" width="84" height="54" rx="12" fill="#3592D8" opacity="0"/>`,
+  chai_cup: `
+    <rect x="40" y="236" width="17" height="26" rx="3" fill="#c8a070"/>
+    <rect x="42" y="236" width="13" height="24" rx="2" fill="#7a3c18"/>
+    <ellipse cx="48" cy="236" rx="8.5" ry="4" fill="#d4b488"/>
+    <path d="M46,232 Q48,224 50,228" fill="none" stroke="#c4a880" stroke-width="1" opacity=".48" style="animation:steam 2.6s ease infinite"/>
+    <path d="M48,228 Q51,220 49,224" fill="none" stroke="#c4a880" stroke-width=".8" opacity=".36" style="animation:steam 2.6s ease infinite .9s"/>`,
+  newspaper_on_table: `
+    <rect x="252" y="226" width="124" height="5" rx="1" fill="#ddd0b8"/>
+    <rect x="254" y="231" width="124" height="4" rx="1" fill="#eae0ca"/>
+    <rect x="252" y="235" width="124" height="26" rx="2" fill="#f8f2e8"/>
+    <rect x="258" y="239" width="112" height="3" rx="1" fill="#ccc0a8"/>
+    <rect x="258" y="245" width="90" height="2" rx="1" fill="#ddd0b8"/>
+    <rect x="258" y="250" width="100" height="2" rx="1" fill="#ddd0b8"/>`,
+  court_papers: `
+    <rect x="230" y="230" width="120" height="32" rx="2" fill="#f0e8d0" transform="rotate(-3 290 246)"/>
+    <rect x="232" y="232" width="120" height="32" rx="2" fill="#f8f2e0" transform="rotate(1 292 248)"/>
+    <rect x="240" y="236" width="104" height="2" rx="1" fill="#c8b888"/>
+    <rect x="240" y="241" width="88" height="2" rx="1" fill="#c8b888"/>
+    <rect x="240" y="246" width="96" height="2" rx="1" fill="#c8b888"/>`,
+  laptop_with_tabs: `
+    <rect x="200" y="220" width="200" height="126" rx="5" fill="#181210"/>
+    <rect x="204" y="224" width="192" height="116" rx="4" fill="#080808"/>
+    <rect x="204" y="224" width="192" height="18" rx="4" fill="#141010"/>
+    <rect x="208" y="228" width="30" height="10" rx="2" fill="#1a2c48"/>
+    <rect x="242" y="228" width="30" height="10" rx="2" fill="#1a1a28"/>
+    <rect x="276" y="228" width="30" height="10" rx="2" fill="#1a1a28"/>
+    <rect x="208" y="244" width="188" height="8" rx="2" fill="#1a3050" opacity=".7"/>
+    <rect x="208" y="256" width="150" height="6" rx="2" fill="#1a2840" opacity=".5"/>`,
+  radio_on_shelf: `
+    <rect x="80" y="234" width="80" height="28" rx="4" fill="#2a2010"/>
+    <rect x="84" y="238" width="40" height="20" rx="2" fill="#1a1408"/>
+    <circle cx="142" cy="248" r="7" fill="#1a1408"/>
+    <circle cx="142" cy="248" r="4" fill="#2a2010"/>
+    <rect x="128" y="244" width="4" height="8" rx="1" fill="#3a3020"/>
+    <circle cx="150" cy="248" r="3" fill="#c8a030"/>`,
+  medical_file: `
+    <rect x="250" y="224" width="90" height="38" rx="3" fill="#e8f0f8"/>
+    <rect x="252" y="226" width="90" height="38" rx="3" fill="#f0f8ff"/>
+    <rect x="254" y="232" width="82" height="2" rx="1" fill="#c0d0e0"/>
+    <rect x="254" y="237" width="70" height="2" rx="1" fill="#c0d0e0"/>
+    <rect x="254" y="242" width="76" height="2" rx="1" fill="#c0d0e0"/>
+    <rect x="254" y="247" width="60" height="2" rx="1" fill="#c0d0e0"/>
+    <rect x="310" y="228" width="24" height="10" rx="2" fill="#e06060" opacity=".6"/>`,
+  protest_banner: `
+    <rect x="180" y="200" width="200" height="32" rx="2" fill="#c84030"/>
+    <rect x="182" y="202" width="196" height="28" rx="2" fill="#e85040"/>
+    <rect x="190" y="210" width="160" height="4" rx="1" fill="#fff" opacity=".6"/>
+    <rect x="190" y="218" width="120" height="4" rx="1" fill="#fff" opacity=".4"/>
+    <rect x="180" y="198" width="4" height="44" fill="#a83020"/>
+    <rect x="376" y="198" width="4" height="44" fill="#a83020"/>`,
+}
+
+const AMBIENT = {
+  ceiling_fan: `
+    <g style="animation:cm 8s linear infinite;transform-origin:350px 20px">
+      <rect x="320" y="18" width="60" height="5" rx="2" fill="#3a3020" opacity=".5"/>
+      <rect x="348" y="6" width="4" height="28" rx="2" fill="#3a3020" opacity=".5"/>
+    </g>`,
+  stars_field: (count) => {
+    var n = count || 18
+    var out = []
+    for (var i = 0; i < n; i++) {
+      var x = 30 + (i * 37) % 640
+      var y = 10 + (i * 19) % 80
+      var r = [1.1,1.6,2.1,1.4,0.9][i%5]
+      var d = (i*0.3).toFixed(1)
+      out.push('<circle cx="'+x+'" cy="'+y+'" r="'+r+'" fill="#e0d8ff" style="animation:twink '+(1.8+i%8*0.2)+'s ease infinite '+d+'s"/>')
+    }
+    return out.join('')
+  },
+  window_glow: function(col, x) {
+    return '<rect x="'+(x||50)+'" y="130" width="17" height="11" rx="1" fill="'+(col||'#f0a020')+'" opacity=".44" style="animation:twink 3.1s ease infinite"/>'
+  },
+  sun: function(x, y, r) {
+    return '<ellipse cx="'+(x||88)+'" cy="'+((y||48)+10)+'" rx="54" ry="48" fill="#ffe060" opacity=".34" style="animation:sunp 4s ease infinite"/><circle cx="'+(x||88)+'" cy="'+(y||48)+'" r="'+(r||19)+'" fill="#ffd030"/>'
+  },
+  birds: `
+    <g style="animation:bfly 24s linear 4s infinite;opacity:.55">
+      <path d="M0,0 Q3,-5 7,0 Q11,-5 14,0" fill="none" stroke="#6a4820" stroke-width="1.2"/>
+    </g>`,
+  tarpaulin_roofs: `
+    <rect x="316" y="143" width="33" height="14" rx="1" fill="#2A7FBF"/>
+    <rect x="354" y="145" width="26" height="12" rx="1" fill="#1B6BA8"/>
+    <rect x="336" y="149" width="24" height="10" rx="1" fill="#3592D8"/>
+    <rect x="368" y="141" width="32" height="15" rx="1" fill="#2A7FBF"/>`,
+  water_body: `
+    <rect x="0" y="158" width="700" height="60" fill="#0a1e3c" opacity=".75"/>
+    <rect x="0" y="156" width="700" height="4" fill="#142a50" opacity=".5"/>`,
+  street_lamps: `
+    <rect x="14" y="210" width="5" height="68" fill="#c09838" opacity=".12" style="animation:lp 3.2s ease infinite"/>
+    <rect x="100" y="184" width="4" height="94" fill="#c09838" opacity=".09" style="animation:lp 3.2s ease infinite .8s"/>`,
+}
+
+const GROUNDS = {
+  home_interior:   function(p){ return '<rect x="0" y="210" width="700" height="11" fill="'+p.gnd2+'"/><rect x="0" y="221" width="700" height="59" fill="'+p.gnd+'"/>'; },
+  street_exterior: function(p){ return '<rect x="0" y="210" width="700" height="11" fill="'+p.gnd2+'"/><rect x="0" y="221" width="700" height="59" fill="'+p.gnd+'"/>'; },
+  office_interior: function(p){ return '<rect x="0" y="198" width="700" height="82" fill="#100e08"/>'; },
+  dark_interior:   function(p){ return '<rect x="0" y="218" width="700" height="62" fill="'+p.gnd+'"/>'; },
+  field_exterior:  function(p){ return '<rect x="0" y="210" width="700" height="70" fill="#1a2e0e"/>'; },
+  water_exterior:  function(p){ return '<rect x="0" y="210" width="700" height="70" fill="#0a1424"/>'; },
+}
+
+function buildScene(desc) {
+  if (!desc) return buildDefaultScene()
+  var palKey = desc.palette || 'warm_dawn'
+  var pal = PALETTES[palKey] || PALETTES.warm_dawn
+  var skyGrad = '<defs><linearGradient id="sk_bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="'+pal.sky1+'"/><stop offset="100%" stop-color="'+pal.sky2+'"/></linearGradient></defs><rect width="700" height="218" fill="url(#sk_bg)"/>'
+  var starsLayer = pal.stars ? AMBIENT.stars_field(16) : ''
+  var sunX = desc.sun_x || (desc.palette === 'amber_evening' ? 596 : 88)
+  var sunLayer = (!pal.stars && desc.palette !== 'grey_overcast') ? AMBIENT.sun(sunX, 48, 19) : ''
+  var birdLayer = (palKey === 'warm_dawn' || palKey === 'harsh_noon') ? AMBIENT.birds : ''
+  var backdropKey = desc.backdrop || 'city_skyline'
+  var backdropFn = BACKDROPS[backdropKey]
+  var backdrop = backdropFn ? backdropFn(pal) : BACKDROPS.city_skyline(pal)
+  var tarpLayer = (backdropKey === 'bazaar_and_market') ? AMBIENT.tarpaulin_roofs : ''
+  var waterLayer = (backdropKey === 'coastal_port') ? AMBIENT.water_body : ''
+  var groundKey = desc.ground || (
+    desc.backdrop === 'agricultural_fields' ? 'field_exterior' :
+    desc.backdrop === 'coastal_port' ? 'water_exterior' :
+    (desc.backdrop === 'newsroom_interior' || desc.backdrop === 'court_corridor' || desc.backdrop === 'hospital_corridor') ? 'office_interior' :
+    'home_interior'
+  )
+  var groundFn = GROUNDS[groundKey]
+  var ground = groundFn ? groundFn(pal) : GROUNDS.home_interior(pal)
+  var lampsLayer = (pal.stars && backdropKey === 'city_skyline') ? AMBIENT.street_lamps : ''
+  var glowLayer = ''
+  if (pal.stars) {
+    var glowXs = [50,136,231,476,530]
+    for (var gi = 0; gi < glowXs.length; gi++) glowLayer += AMBIENT.window_glow('#f0a020', glowXs[gi])
+  }
+  var fgKey = desc.key_object || 'phone_with_notification'
+  var fgObj = FG_OBJECTS[fgKey] || FG_OBJECTS.phone_with_notification
+  var ambDetail = desc.ambient === 'ceiling_fan' ? AMBIENT.ceiling_fan : ''
+  var chaiExtra = (fgKey === 'chai_cup') ? FG_OBJECTS.chai_cup : ''
+  return '<svg width="100%" viewBox="0 0 700 280" xmlns="http://www.w3.org/2000/svg">'+skyGrad+starsLayer+sunLayer+birdLayer+backdrop+waterLayer+tarpLayer+ground+glowLayer+lampsLayer+fgObj+ambDetail+chaiExtra+'</svg>'
+}
+
+function buildHallScene() {
+  var seats = [90,134,178,222,266,310,354,398,442,486,530,574,618]
+  var seatsSvg = ''
+  for (var i = 0; i < seats.length; i++) {
+    var x = seats[i]
+    var cy = (x % 2 === 0) ? 208 : 206
+    var ry = (x % 2 === 0) ? 214 : 212
+    seatsSvg += '<circle cx="'+x+'" cy="'+cy+'" r="6" fill="#282014"/><rect x="'+(x-6)+'" y="'+ry+'" width="12" height="22" rx="2" fill="#282014"/>'
+  }
+  return '<svg width="100%" viewBox="0 0 700 280" xmlns="http://www.w3.org/2000/svg"><rect width="700" height="280" fill="#0c0a08"/><rect x="0" y="0" width="700" height="32" fill="#141008"/><rect x="62" y="5" width="64" height="8" rx="3" fill="#f0e098" opacity=".62" style="animation:hp 4s ease infinite"/><rect x="226" y="5" width="64" height="8" rx="3" fill="#f0e098" opacity=".57" style="animation:hp 4s ease infinite 1s"/><rect x="390" y="5" width="64" height="8" rx="3" fill="#f0e098" opacity=".60" style="animation:hp 4s ease infinite 2s"/><rect x="554" y="5" width="64" height="8" rx="3" fill="#f0e098" opacity=".54" style="animation:hp 4s ease infinite 3s"/><ellipse cx="94" cy="30" rx="64" ry="95" fill="#c8a038" opacity=".048" style="animation:hp 4s ease infinite"/><ellipse cx="258" cy="30" rx="58" ry="85" fill="#c8a038" opacity=".040" style="animation:hp 4s ease infinite 1s"/><ellipse cx="422" cy="30" rx="58" ry="85" fill="#c8a038" opacity=".044" style="animation:hp 4s ease infinite 2s"/><ellipse cx="586" cy="30" rx="58" ry="85" fill="#c8a038" opacity=".038" style="animation:hp 4s ease infinite 3s"/><rect x="62" y="138" width="106" height="58" rx="3" fill="#1c1808"/><rect x="80" y="136" width="70" height="3" fill="#c8a038" opacity=".33"/><rect x="0" y="198" width="700" height="82" fill="#100e08"/><rect x="0" y="196" width="700" height="6" fill="#242016"/><g style="opacity:.46">'+seatsSvg+'</g><circle cx="200" cy="186" r="7" fill="#382c12"/><rect x="193" y="193" width="14" height="24" rx="2" fill="#382c12"/><circle cx="380" cy="183" r="6.5" fill="#382c12"/><rect x="373" y="190" width="13" height="22" rx="2" fill="#382c12"/></svg>'
+}
+
+function buildDefaultScene() {
+  return buildScene({palette:'warm_dawn',backdrop:'city_skyline',key_object:'phone_with_notification',ambient:'chai_steam',ground:'home_interior'})
+}
+
+
+// ═══════════════════════════════════════════════════════════════════
+// GE — GAME EVENTS
+// ═══════════════════════════════════════════════════════════════════
+
+var GE = (function() {
+  var PERSONA = 'meera'
+  var DIM_MAP = {
+    source_selection:'trust_hierarchy',opinion_formation:'framing_absorption',
+    bayesian_update:'prior_update',silence_registration:'absence_detection',
+    wire_annotation:'source_attribution',synthesis_edit:'synthesis_under_pressure',
+    vote:'collective_action'
+  }
+  var OPINION_FR = {0:0.4,1:-0.2,2:0.0,3:0.2}
+  var UPDATE_FR  = {0:-0.1,1:0.3,2:0.0,3:-0.1}
+  var firstSrcFr=null,b2Delta=null,beatStart={},beatTimings={}
+  var sessionAnswers={},sessionScores={},answerChanges={},revealsEngaged={}
+  var decisionStart=Date.now()
+
+  function post(type,payload){
+    try{ window.parent.postMessage({type:type,payload:payload},'*') }
+    catch(e){ console.warn('[GE] postMessage:',e) }
+  }
+
+  function framingLabel(fr){
+    if(fr===null||fr===undefined)return null
+    if(fr<-0.2)return 'left'
+    if(fr>0.2)return 'right'
+    return 'neutral'
+  }
+
+  function init(story,scenarioId){
+    beatStart[1]=Date.now();decisionStart=Date.now()
+    post('vasantpur:log',{event:'session_init',clusterId:story&&story.scry&&story.scry.cluster_id||null,scenarioId:scenarioId||null,clusterTopic:story&&story.scry&&story.scry.topic||null,persona:PERSONA})
+  }
+
+  function decision(roundType,params){
+    var timingMs=Date.now()-decisionStart
+    var behavioralDim=DIM_MAP[roundType]||roundType
+    var choiceIndex=params.choiceIndex!=null?params.choiceIndex:0
+    var row={session_id:null,user_id:null,anon_id:null,cluster_id:null,scenario_id:null,
+      topic:null,persona:PERSONA,behavioral_dim:behavioralDim,round_index:params.roundIndex,
+      round_type:roundType,time_taken_ms:timingMs,changed_answer:params.changedAnswer||false,
+      num_changes:params.numChanges||0,answer:{choice_index:choiceIndex}}
+
+    if(roundType==='source_selection'){
+      firstSrcFr=params.srcFr!=null?params.srcFr:null
+      row.shown_framing_values=params.allSrcs||null
+      row.answer={choice_index:choiceIndex,outlet_type:params.outletType,fr:params.srcFr}
+      row.actual_framing_score=params.srcFr!=null?params.srcFr:null
+      row.framing_estimate=framingLabel(params.srcFr)
+      sessionAnswers.b1_src=choiceIndex
+      sessionAnswers._src_outlet_type=params.outletType||'unknown'
+      answerChanges.b1_src=params.numChanges||0
+    } else if(roundType==='opinion_formation'){
+      var iF=OPINION_FR[choiceIndex]!=null?OPINION_FR[choiceIndex]:0
+      var err=firstSrcFr!==null?Math.abs(iF-firstSrcFr):null
+      row.answer={choice_index:choiceIndex,implied_fr:iF}
+      row.actual_framing_score=firstSrcFr;row.framing_estimate=framingLabel(iF);row.framing_error=err
+      sessionAnswers.b1_opinion=choiceIndex;sessionScores.b1=err!==null?Math.max(0,1-err):0
+    } else if(roundType==='bayesian_update'){
+      b2Delta=(params.src1Fr!==null&&params.src2Fr!==null)?Math.abs(params.src2Fr-params.src1Fr):null
+      var iF2=UPDATE_FR[choiceIndex]!=null?UPDATE_FR[choiceIndex]:0
+      var didUp=choiceIndex===0||choiceIndex===2
+      row.shown_framing_values=[{src1_fr:params.src1Fr,src2_fr:params.src2Fr,delta:b2Delta}]
+      row.answer={choice_index:choiceIndex,update_type:['held_both','defaulted','uncertain','reflected'][choiceIndex]}
+      row.actual_framing_score=params.src2Fr!=null?params.src2Fr:null;row.framing_estimate=framingLabel(iF2)
+      row.framing_error=b2Delta;row.is_correct=didUp
+      sessionAnswers.b2_update=choiceIndex;answerChanges.b2=params.numChanges||0;sessionScores.b2=didUp?1:0
+    } else if(roundType==='silence_registration'){
+      var noticed=choiceIndex===0||choiceIndex===2,acted=choiceIndex===2
+      row.shown_framing_values=params.silentPublishers||null
+      row.answer={choice_index:choiceIndex,noticed:noticed,acted:acted};row.is_correct=noticed
+      row.intensity_estimate=noticed?(acted?'high':'medium'):'low'
+      sessionAnswers.b3_silence=choiceIndex;sessionScores.b3=noticed?1:0;revealsEngaged.b3_scry=true
+    } else if(roundType==='wire_annotation'){
+      row.article_ids=params.articleIds||null;row.shown_framing_values=params.allOptions||null
+      row.answer={label:params.annoLabel};row.framing_estimate=params.annoLabel||null
+      sessionAnswers.b4_anno=params.annoLabel;revealsEngaged.b4_scry=true
+    } else if(roundType==='synthesis_edit'){
+      var fF=params.finalFr!=null?params.finalFr:null
+      var err2=(fF!==null&&firstSrcFr!==null)?Math.abs(fF-firstSrcFr):null
+      row.answer={edits_count:params.editsCount||0};row.actual_framing_score=fF
+      row.framing_error=err2;row.num_changes=params.editsCount||0
+      sessionAnswers.b5_edits=params.editsCount||0;sessionScores.b5=(params.editsCount||0)>0?1:0
+    } else if(roundType==='vote'){
+      var labels=['independent_review','conditional','approve']
+      row.answer={choice_index:choiceIndex,label:labels[choiceIndex]}
+      row.intensity_estimate=labels[choiceIndex];sessionAnswers.b5_vote=choiceIndex
+    }
+
+    post('vasantpur:decision',row)
+    post('vasantpur:log',{event:'session_patch',answers:sessionAnswers,scores:sessionScores,answer_changes:answerChanges,reveals_engaged:revealsEngaged})
+    decisionStart=Date.now()
+  }
+
+  function beatComplete(completedBeat){
+    var elapsed=Date.now()-(beatStart[completedBeat]||Date.now())
+    beatTimings['b'+completedBeat]=elapsed;beatStart[completedBeat+1]=Date.now();decisionStart=Date.now()
+    post('vasantpur:beatComplete',{beat:completedBeat,timingMs:elapsed})
+  }
+
+  function scryEngaged(key){
+    revealsEngaged[key]=true;post('vasantpur:scryEngaged',{key:key})
+  }
+
+  function finish(){
+    var totalScore=Object.values(sessionScores).reduce(function(a,b){return a+(b||0)},0)
+    var conclusionType=deriveConclusion()
+    post('vasantpur:sessionComplete',{clusterId:null,scenarioId:null,clusterTopic:null,
+      persona:PERSONA,answers:sessionAnswers,scores:sessionScores,totalScore:totalScore,
+      roundTimingsMs:beatTimings,answerChanges:answerChanges,revealsEngaged:revealsEngaged,
+      completedAt:new Date().toISOString(),firstSrcFr:firstSrcFr,b2Delta:b2Delta,conclusionType:conclusionType,decisions:[]})
+    return{totalScore:totalScore,conclusionType:conclusionType}
+  }
+
+  function deriveConclusion(){
+    var s=sessionAnswers
+    if(s.b3_silence===2)return 'silence_spotter'
+    if(s.b3_silence===0&&s.b4_anno==='lazy')return 'pattern_reader'
+    if(s.b2_update===1&&!s.b3_silence)return 'confirmed_reader'
+    if(s.b1_src===3&&s.b2_update===1)return 'intensity_follower'
+    if(s.b2_update===2&&!s.b5_edits)return 'overwhelmed'
+    return 'pattern_reader'
+  }
+
+  // Listen for community stats coming back from React
+  window.addEventListener('message', function(e) {
+    if (e.data && e.data.type === 'vasantpur:communityStats') {
+      window._communityStats = e.data.payload
+    }
+  })
+
+  return{init:init,decision:decision,beatComplete:beatComplete,scryEngaged:scryEngaged,finish:finish}
+})()
+
+
+// ═══════════════════════════════════════════════════════════════════
+// GAME STATE + UTILS
+// ═══════════════════════════════════════════════════════════════════
+
+var STORY = null
+var CHAR  = {}
+var LOC   = {}
+var CAST  = []
+
+var S={src:-1,b1r:-1,b2d:-1,b3d:-1,b4d:-1,b5d:-1,anno:-1,edits:0,touchedPersonal:false}
+var beat=1,phase=0,ho=false,wplay=false
+
+function $(id){ return document.getElementById(id) }
+function N(){ return $('narr') }
+var scrollTick=null
+function sd(){
+  var r=document.scrollingElement||document.documentElement
+  if(!r)return
+  var t=r.scrollHeight-r.clientHeight
+  if(t<=0||Math.abs(t-r.scrollTop)<6)return
+  if(scrollTick)cancelAnimationFrame(scrollTick)
+  scrollTick=requestAnimationFrame(function(){r.scrollTo({top:t,behavior:'auto'});scrollTick=null})
+}
+
+function p(html,delay,cls){
+  var d=document.createElement('div');d.className='p'+(cls?' '+cls:'');d.innerHTML=html
+  N().insertBefore(d,$('hw'))
+  setTimeout(function(){d.classList.add('in');sd();},delay||120)
+  return d
+}
+
+function dots(){
+  var b=$('bdots')
+  var html=''
+  for(var i=1;i<=5;i++) html+='<div class="bp'+(i<beat?' dn':i===beat?' on':'')+'"></div>'
+  b.innerHTML=html
+  $('tbb').textContent='Beat '+beat+' of 5'
+}
+
+function getSceneDesc(beatNum){
+  if(beatNum===5)return null
+  if(!STORY||!STORY.scenes)return null
+  for(var i=0;i<STORY.scenes.length;i++){
+    if(STORY.scenes[i].beat===beatNum)return STORY.scenes[i]
+  }
+  var idx=Math.min(beatNum-1,STORY.scenes.length-1)
+  return STORY.scenes[idx]||null
+}
+
+function setScene(beatNum,time,cb){
+  var f=$('sfade');f.style.opacity='1'
+  setTimeout(function(){
+    var svgHtml = beatNum===5 ? buildHallScene() : buildScene(getSceneDesc(beatNum))
+    $('scene').innerHTML='<div id="sfade" style="position:absolute;inset:0;background:var(--page);opacity:0;pointer-events:none;transition:opacity .65s;z-index:2"></div><div id="stime" style="position:absolute;bottom:0;left:0;right:0;z-index:3;padding:10px 18px 12px;background:linear-gradient(transparent,rgba(15,13,11,.96));font-family:\'Courier New\',monospace;font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink3)">'+time+'</div>'+svgHtml
+    bw();setTimeout(function(){if(cb)cb();},200)
+  },520)
+}
+
+function bw(){
+  var ws=document.querySelectorAll('.vnw')
+  var heights=[4,8,13,9,15,10,6,9,14,7,5,10,12,8,15,6,11,14,7,10]
+  for(var wi=0;wi<ws.length;wi++){
+    ws[wi].innerHTML=''
+    for(var hi=0;hi<heights.length;hi++){
+      var b=document.createElement('div');b.className='vb';b.style.height=heights[hi]+'px';ws[wi].appendChild(b)
+    }
+  }
+}
+
+function shakePhone(cb){
+  var g=$('phgrp'),scr=$('phscr'),gw=$('phglow')
+  if(!g)return cb&&cb()
+  g.style.animation='phshk .5s ease'
+  if(scr)scr.style.animation='sg .6s ease'
+  if(gw){gw.style.opacity='.46';gw.style.transition='opacity .25s';setTimeout(function(){gw.style.opacity='0';},720)}
+  setTimeout(function(){
+    g.style.animation='';if(scr)scr.style.animation=''
+    var nb=$('phnb');if(nb)nb.style.opacity='1'
+    if(cb)setTimeout(cb,350)
+  },560)
+}
+
+function mirror(lbl,txt,sub){
+  var d=document.createElement('div');d.className='mirror'
+  d.innerHTML='<div class="mirror-lbl">'+lbl+'</div><div class="mirror-txt">'+txt+'</div>'+(sub?'<div class="mirror-sub">'+sub+'</div>':'')
+  N().insertBefore(d,$('hw'))
+  setTimeout(function(){d.classList.add('in');sd();},100)
+}
+
+function scryFull(){
+  var sc=STORY.scry
+  var frW=Math.abs(sc.fr)*50,frL=sc.fr>=0?50:50-frW
+  var frCol=sc.fr>.2?'var(--red)':sc.fr<-.2?'var(--blue)':'var(--ink3)'
+  var pubsHtml=''
+  for(var pi=0;pi<sc.publishers.length;pi++){
+    var pub=sc.publishers[pi]
+    var isSilent=sc.silent.indexOf(pub)>=0
+    pubsHtml+='<span class="scry-pub'+(isSilent?' silent':'')+'">'+pub+'</span>'
+  }
+  var d=document.createElement('div');d.className='scry'
+  d.innerHTML='<div class="scry-hd"><div class="scry-dot"></div><span class="scry-lbl">SCRY · Live cluster analysis</span></div><div class="scry-sub">This is the full landscape of coverage on this story. You\'ve been reading inside one slice of it.</div><div class="scry-row"><div class="scry-rl">Framing spread</div><div class="scry-trk"><div class="scry-mid"></div><div class="scry-fill" id="sfr" style="left:50%;width:0;background:'+frCol+'"></div></div><div class="scry-val" id="sfrv">—</div></div><div class="scry-row"><div class="scry-rl">Avg intensity</div><div class="scry-trk"><div class="scry-fill" id="sin" style="left:0;width:0;background:var(--amber)"></div></div><div class="scry-val" id="sinv">—</div></div><div class="scry-row"><div class="scry-rl">Fact ratio</div><div class="scry-trk"><div class="scry-fill" id="sfac" style="left:0;width:0;background:var(--blue)"></div></div><div class="scry-val" id="sfacv">—</div></div><div style="margin-top:9px"><div style="font-family:\'Courier New\',monospace;font-size:9px;color:var(--ink4);margin-bottom:5px;text-transform:uppercase;letter-spacing:.09em">Publishers · silent outlets in amber</div><div class="scry-pubs">'+pubsHtml+'</div></div><div class="scry-insight">'+sc.insight+'</div>'
+  N().insertBefore(d,$('hw'))
+  GE.scryEngaged('b3_scry')
+  setTimeout(function(){
+    d.classList.add('in')
+    setTimeout(function(){
+      $('sfr').style.left=frL+'%';$('sfr').style.width=frW+'%';$('sfrv').textContent=(sc.fr>0?'+':'')+sc.fr.toFixed(2)
+      $('sin').style.width=(sc.intensity*100)+'%';$('sinv').textContent=Math.round(sc.intensity*100)+'%'
+      $('sfac').style.width=(sc.fact*100)+'%';$('sfacv').textContent=Math.round(sc.fact*100)+'%'
+    },400);sd()
+  },100)
+}
+
+function scryMissing(){
+  var d=document.createElement('div');d.className='scry-missing'
+  d.innerHTML='<div class="scry-hd" style="margin-bottom:7px"><div class="scry-dot"></div><span class="scry-lbl">SCRY · Angle not in this source</span></div><div class="scry-miss-body">The article you just read didn\'t cover one angle that <strong style="color:var(--scry)">SCRY found across other publishers</strong>:<br><br>'+STORY.scry.missing+'</div><button class="scry-skip" onclick="this.closest(\'.scry-missing\').style.opacity=\'.4\'">understood — continue →</button>'
+  N().insertBefore(d,$('hw'));sd()
+}
+
+function scryAnno(){
+  var total=Object.values(STORY.anno_results).reduce(function(a,b){return a+b},0)
+  var annoOptsHtml=''
+  for(var ai=0;ai<STORY.anno.length;ai++){
+    var o=STORY.anno[ai]
+    annoOptsHtml+='<button class="ao" onclick="doAnno(\''+o.id+'\',this)"><div class="ao-main">'+o.main+'</div><div class="ao-sub">'+o.sub+'</div></button>'
+  }
+  var annoBarsHtml=''
+  for(var ai2=0;ai2<STORY.anno.length;ai2++){
+    var o2=STORY.anno[ai2]
+    var pct=Math.round(STORY.anno_results[o2.id]/total*100)
+    var shortLabel=o2.main.split(' ').slice(0,3).join(' ')
+    annoBarsHtml+='<div class="ab-row"><div class="ab-l">'+shortLabel+'</div><div class="ab-t"><div class="ab-f" style="width:0" data-w="'+pct+'%"></div></div><div style="font-family:\'Courier New\',monospace;font-size:10px;color:var(--ink4);width:32px;text-align:right">'+pct+'%</div></div>'
+  }
+  var castName=(CAST[1]&&CAST[1].name)||'A contact'
+  var d=document.createElement('div');d.className='scry'
+  d.innerHTML='<div class="scry-hd"><div class="scry-dot"></div><span class="scry-lbl">SCRY · Annotate this pattern</span></div><div class="anno-section"><div class="anno-q">'+castName+' found three newspapers with an identical sentence under different bylines:<br><em>"...'+STORY.wire_sentence+'..."</em><br><br>What kind of failure is this?</div><div class="anno-opts">'+annoOptsHtml+'</div><div class="anno-res" id="anno-res"><div style="font-size:12px;color:var(--ink3);margin-bottom:9px;font-family:\'Courier New\',monospace">How 847 other readers labelled this:</div>'+annoBarsHtml+'<div class="anno-note">Your annotation has been added to SCRY\'s dataset. Across 847 sessions, the most common label was "Syndication without attribution."</div></div></div>'
+  N().insertBefore(d,$('hw'))
+  setTimeout(function(){d.classList.add('in');sd();},100)
+}
+
+function doAnno(id,btn){
+  S.anno=id
+  var aos=document.querySelectorAll('.ao')
+  for(var i=0;i<aos.length;i++){
+    var el=aos[i]
+    var onclick=el.getAttribute('onclick')||''
+    el.classList.add(onclick.indexOf("'"+id+"'")>=0?'sel':'dim')
+  }
+  btn.classList.remove('dim');btn.classList.add('sel')
+  var r=$('anno-res');r.style.display='block'
+  GE.decision('wire_annotation',{roundIndex:4,annoLabel:id,allOptions:STORY.anno.map(function(o){return{id:o.id,main:o.main}})})
+  GE.scryEngaged('b4_scry')
+  setTimeout(function(){
+    var bars=r.querySelectorAll('.ab-f')
+    for(var i=0;i<bars.length;i++) bars[i].style.width=bars[i].dataset.w
+    sd()
+  },200)
+}
+
+function typeThen(rows,then){
+  var tw=document.createElement('div');tw.className='typing'
+  tw.innerHTML='<div class="td"></div><div class="td"></div><div class="td"></div>'
+  N().insertBefore(tw,$('hw'))
+  setTimeout(function(){tw.classList.add('on')},200)
+  setTimeout(function(){
+    tw.remove()
+    var cw=document.createElement('div');cw.className='chat';N().insertBefore(cw,$('hw'))
+    rows.forEach(function(r,ri){
+      setTimeout(function(){
+        var castColors={
+          r:{bg:'#8c3c0e',fg:'#fde68a',nc:'color:var(--amber)'},
+          d:{bg:'#1B5898',fg:'#bfe8fd',nc:'color:var(--blue)'},
+          m:{bg:'#2a1c0e',fg:'#d4a060',nc:'color:var(--accent)'}
+        }
+        var cc=castColors[r.who]||castColors.r
+        var nm=r.who==='r'?((CAST[0]&&CAST[0].name)||'Colleague'):r.who==='d'?((CAST[1]&&CAST[1].name)||'Contact'):((CHAR&&CHAR.name)||'You')
+        var crow=document.createElement('div');crow.className='crow'
+        crow.innerHTML='<div class="cav" style="background:'+cc.bg+';color:'+cc.fg+'">'+nm[0]+'</div><div class="cbub"><div class="cname" style="'+cc.nc+'">'+nm+'</div>'+r.html+'</div>'
+        cw.appendChild(crow);setTimeout(function(){crow.classList.add('in');sd();},50)
+        if(ri===rows.length-1&&then)setTimeout(then,500)
+      },ri*820)
+    })
+    bw()
+  },1600)
+}
+
+function ctn(lbl,cb){
+  var b=document.createElement('button');b.className='ctn';b.textContent=lbl||'Continue →'
+  b.onclick=cb||function(){phase++;render();}
+  N().insertBefore(b,$('hw'))
+  setTimeout(function(){b.classList.add('rdy');sd();},600)
+}
+
+function choices(q,ctx,opts,onPick){
+  var w=document.createElement('div');w.className='dec'
+  var optsHtml=''
+  for(var oi=0;oi<opts.length;oi++){
+    var o=opts[oi]
+    optsHtml+='<button class="ch" data-i="'+oi+'">'+(typeof o==='string'?'<div class="ch-main">'+o+'</div>':'<div class="ch-main">'+o.main+'</div>'+(o.sub?'<div class="ch-sub">'+o.sub+'</div>':''))+'</button>'
+  }
+  w.innerHTML='<div class="dec-q">'+q+'</div>'+(ctx?'<div class="dec-ctx">'+ctx+'</div>':'')+'<div class="choices">'+optsHtml+'</div>'
+  var chs=w.querySelectorAll('.ch')
+  for(var ci=0;ci<chs.length;ci++){
+    chs[ci].onclick=(function(idx){
+      return function(){
+        var allChs=this.closest('.choices').querySelectorAll('.ch')
+        for(var j=0;j<allChs.length;j++) allChs[j].classList.add(j===idx?'sel':'dim')
+        setTimeout(function(){onPick(idx)},320)
+      }
+    })(ci)
+  }
+  N().insertBefore(w,$('hw'))
+  setTimeout(function(){
+    var chs2=w.querySelectorAll('.ch')
+    for(var i=0;i<chs2.length;i++){
+      (function(el,i2){setTimeout(function(){el.classList.add('in')},i2*80+100)})(chs2[i],i)
+    }
+    sd()
+  },100)
+}
+
+function nxt(lbl,cb){
+  var b=document.createElement('button');b.className='nxt';b.textContent=lbl;b.onclick=cb
+  N().insertBefore(b,$('hw'));sd()
+}
+
+
+// ═══════════════════════════════════════════════════════════════════
+// BEAT FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════
+
+function render(){
+  var children=Array.from(N().children)
+  for(var i=0;i<children.length;i++){if(children[i].id!=='hw')children[i].remove()}
+  ho=false;$('htxt').classList.remove('on');$('htb').textContent='? hint'
+  dots()
+  var hints=[
+    "That unsent message — it has been sitting there since before you woke up.",
+    "Each source names the same event differently. Notice what each one chooses to put first.",
+    ((CAST[1]&&CAST[1].name)||'They')+" came to you because they needed someone who would not just reassure them.",
+    "The nod you received is a specific gesture. Someone is hoping you already know.",
+    "Three papers, one sentence, three bylines. Ask where the sentence came from.",
+    "The statement is built from your choices. What you keep is as revealing as what you change.",
+    "SCRY shows you the landscape you were reading inside. You were in one part of it.",
+    "Some outlets went completely silent on a story in their core beat. That is editorially unusual.",
+    "The collective outcome is shaped by everyone who reads. Your read is one part of that weight.",
+    "There is no correct answer. But there is a difference between what you read and what you say publicly."
+  ]
+  $('htxt').textContent=hints[Math.min((beat-1)*2+Math.min(phase,1),hints.length-1)]
+  var fns={1:{0:b1p0,1:b1p1,2:b1p2,3:b1p3,4:b1p4,5:b1p5},
+    2:{0:b2p0,1:b2p1,2:b2p2,3:b2p3},
+    3:{0:b3p0,1:b3p1,2:b3p2,3:b3p3},
+    4:{0:b4p0,1:b4p1,2:b4p2,3:b4p3},
+    5:{0:b5p0,1:b5p1,2:b5p2,3:b5p3}}
+  var beatFns=fns[beat]||{}
+  if(beatFns[phase])beatFns[phase]()
+}
+
+function b1p0(){
+  var c=CHAR,l=LOC
+  p((c.name||'Meera Pillai')+', '+(c.age||34)+'. '+(c.role||'Civics teacher')+'. '+(c.bio||''),200)
+  p('It is early morning. '+(c.personal_stake||'There is a story that has just arrived, and it concerns someone she knows.'),900)
+  if(c.unsent_message){
+    p('There is a message she has been composing since before dawn — '+c.unsent_message+' She has not sent it.',1700)
+    p('She has not sent it because sending it would mean the thing is real.',2600)
+  }
+  setTimeout(function(){ctn('Continue →',function(){phase=1;render();})},c.unsent_message?3500:2200)
+}
+
+function b1p1(){
+  p('At 7:43am, her phone buzzes.',200)
+  setTimeout(function(){shakePhone(function(){
+    var n=document.createElement('div');n.className='notif'
+    n.innerHTML='<div class="notif-app">'+((STORY.srcs[0]&&STORY.srcs[0].pub)||'Breaking')+' · just now</div><div class="notif-txt">'+((STORY.srcs[0]&&STORY.srcs[0].hl)||STORY.title||'Breaking news.')+' </div>'
+    N().insertBefore(n,$('hw'));setTimeout(function(){n.classList.add('in')},100)
+    p(((CAST[0]&&CAST[0].name)||'A colleague')+' is already messaging. '+((CAST[0]&&CAST[0].reading_pattern)||''),700)
+    p('She has twenty minutes. The draft message is still unsent.',1400)
+    setTimeout(function(){ctn('Continue →',function(){phase=2;render();})},2100);sd()
+  })},600)
+}
+
+function b1p2(){
+  var cast0=CAST[0]||{name:'Colleague',tension:'sends a voice note',bio:''}
+  p('Before she has finished reading the headline, another buzz.',200)
+  setTimeout(function(){typeThen([
+    {who:'r',html:'<div class="vn-row"><div class="vn-play" onclick="pw(this)"><svg width="9" height="11" viewBox="0 0 10 12" fill="white"><polygon points="0,0 10,6 0,12"/></svg></div><div class="vnw"></div><div class="vts">0:47</div></div><div class="vtrans">"'+(cast0.bio||'This is significant.')+' '+(cast0.tension||'You need to read this.')+'"</div>'},
+    {who:'r',html:'<div class="ctxt">did you see this? 🙏🙏</div>'}
+  ],function(){
+    var absenceLine=cast0.reading_pattern||((cast0.name||'They')+' has not mentioned '+((LOC&&LOC.name)||'the affected community')+' once.')
+    p(absenceLine+' This is not hostility. It is the shape of what they read.',400)
+    setTimeout(function(){ctn('Continue →',function(){phase=3;render();})},1900)
+  })},400)
+}
+
+function b1p3(){
+  choices('What do you read first?',
+    (CHAR&&CHAR.goal)||'You have twenty minutes and a decision to make.',
+    [{main:((STORY.srcs[0]&&STORY.srcs[0].pub)||'Official source'),sub:'The announcement · source of the story'},
+     {main:((STORY.srcs[1]&&STORY.srcs[1].pub)||'Mainstream paper'),sub:'How the city is reading it'},
+     {main:'Search — see what else is out there',sub:'Multiple sources at once'},
+     {main:((CAST[0]&&CAST[0].name)||'Colleague')+'\'s take',sub:'What they actually said'}],
+    function(i){
+      S.src=i
+      GE.decision('source_selection',{roundIndex:0,choiceIndex:i,
+        srcFr:(STORY.srcs[i]&&STORY.srcs[i].fr!=null)?STORY.srcs[i].fr:0,
+        outletType:['official','mainstream','search','peer'][i],
+        allSrcs:STORY.srcs.map(function(s){return{id:s.id,fr:s.fr,lbl:s.lbl}})})
+      phase=4;render()
+    })
+}
+
+function b1p4(){
+  var src=STORY.srcs[S.src]||STORY.srcs[0]
+  var card=document.createElement('div');card.className='src'
+  card.innerHTML='<div class="src-hd"><div class="src-pub">'+src.pub+'</div><div class="src-hl">'+src.hl+'</div></div><div class="src-bd">'+src.body+'</div>'
+  N().insertBefore(card,$('hw'));setTimeout(function(){card.classList.add('in');sd();},100)
+  if(S.src!==2)setTimeout(function(){scryMissing()},900)
+  var delay=S.src!==2?1500:700
+  setTimeout(function(){
+    choices('What are you actually thinking right now?',null,
+      ['Cautiously hopeful. The headline number is real. Progress has costs.',
+       'Uneasy. What I just read did not tell me what happens to people I know.',
+       'I need to know if '+((LOC&&LOC.name)||'the affected people')+' have been contacted before I can think about anything else.',
+       'Unsure. I need more information before I say anything to anyone.'],
+      function(i){
+        S.b1r=i;if(i===2)S.touchedPersonal=true
+        GE.decision('opinion_formation',{roundIndex:1,choiceIndex:i,srcFr:src.fr})
+        phase=5;render()
+      })
+  },delay)
+}
+
+function b1p5(){
+  var src=STORY.srcs[S.src]||STORY.srcs[0]
+  var pct=(src.fr+1)/2*100
+  p('She picks up her bag.',200)
+  var mirrors=[
+    'You read the official version first. It gave you a number and a quote. It described the people at '+((LOC&&LOC.name)||'the affected location')+' as a category. <em>That is the frame you are carrying forward.</em>',
+    'You read the mainstream version. It was careful — it flagged what it did not have. Whether that carefulness reached you depends on which paragraph you stopped reading at.',
+    'You searched and found two stories. The question is which one your eye moved to first — and which one is still in your head.',
+    'You heard '+((CAST[0]&&CAST[0].name)||'your colleague')+'\'s read first. Their frame was shaped by their sources. <em>So is yours.</em>'
+  ]
+  var srcIdx=S.src>=0?S.src:0
+  setTimeout(function(){
+    var m=document.createElement('div');m.className='mirror'
+    m.innerHTML='<div class="mirror-lbl">Your first read · what it means</div><div class="mirror-txt">'+(mirrors[srcIdx]||mirrors[0])+'</div><div style="display:flex;align-items:center;gap:9px;margin-top:10px"><div style="font-size:11px;color:var(--ink3);width:90px;flex-shrink:0;font-family:\'Courier New\',monospace">Framing direction</div><div style="flex:1;height:3px;border-radius:2px;background:var(--rule2);position:relative"><div style="position:absolute;left:50%;top:-3px;width:.5px;height:9px;background:var(--rule3)"></div><div id="cd" style="position:absolute;top:50%;width:9px;height:9px;border-radius:50%;background:'+src.col+';transform:translate(-50%,-50%);left:50%;transition:left 1.5s cubic-bezier(.34,1.28,.64,1)"></div></div><div style="font-family:\'Courier New\',monospace;font-size:10px;color:var(--ink4);width:80px;text-align:right">'+src.lbl+'</div></div><div class="mirror-sub">'+src.thread+'.</div>'
+    N().insertBefore(m,$('hw'))
+    setTimeout(function(){m.classList.add('in');setTimeout(function(){var cd=$('cd');if(cd)cd.style.left=pct+'%'},400);sd()},100)
+    nxt('Beat 2 → '+((CAST[1]&&CAST[1].name)||'A contact')+' finds you',nextBeat)
+  },600)
+}
+
+function b2p0(){
+  var cast1=CAST[1]||{name:'Devika',role:'student',bio:'',tension:'She came with a question.'}
+  p('Free period. '+cast1.name+', '+cast1.role+', is outside.',200)
+  p((cast1.bio||'')+' She comes because '+(cast1.tension||'she has found something.'),900)
+  p('"I found another article about this. It sounds like a completely different story."',1700)
+  setTimeout(function(){ctn('Look at both →',function(){phase=1;render();})},2600)
+}
+
+function b2p1(){
+  p('You read them side by side for the first time.',200)
+  var src0=STORY.srcs[0],src1=STORY.srcs[1]||STORY.srcs[0]
+  var cmp=document.createElement('div');cmp.className='cmp'
+  cmp.innerHTML='<div class="cmp-hd">Two articles. Same event. Same day. Different stories.</div><div class="cmp-cols"><div class="cmp-col"><div class="cmp-pub">'+src0.pub+'</div><p><strong>'+src0.hl+'</strong></p><p style="font-family:\'Courier New\',monospace;font-size:10px;color:var(--ink4)">'+src0.thread+'</p></div><div class="cmp-col"><div class="cmp-pub" style="color:var(--blue)">'+src1.pub+'</div><p><strong>'+src1.hl+'</strong></p><p>'+src1.thread+'</p></div></div>'
+  N().insertBefore(cmp,$('hw'));setTimeout(function(){sd()},400)
+  setTimeout(function(){ctn('Continue →',function(){phase=2;render();})},900)
+}
+
+function b2p2(){
+  var cast1=CAST[1]||{name:'Devika'}
+  choices((cast1.name)+' found the second article herself. She came to you. What do you tell her?',
+    'She is not asking you to resolve it. She is watching how you hold it.',
+    ['"Both are true. Different outlets prioritize different things. You have to hold both."',
+     '"The first source is more established. I would trust their read on this."',
+     '"I do not know enough to say definitively. Neither does either article."',
+     '"What do you think? You are the one who found the second article."'],
+    function(i){
+      S.b2d=i
+      var src1Fr=STORY.srcs[S.src>=0?S.src:0].fr
+      var altIdx=S.src===1?0:1
+      var src2Fr=(STORY.srcs[altIdx]&&STORY.srcs[altIdx].fr!=null)?STORY.srcs[altIdx].fr:0
+      GE.decision('bayesian_update',{roundIndex:2,choiceIndex:i,src1Fr:src1Fr,src2Fr:src2Fr})
+      phase=3;render()
+    })
+}
+
+function b2p3(){
+  var cn=(CAST[1]&&CAST[1].name)||'They'
+  var res=[
+    {t:cn+' nod slowly. "So the truth is somewhere in the middle." They do not look entirely satisfied. <em>You are not either.</em>',m:'You named the complexity — both framings are partial, both are real.',sub:'Most readers collapse to one version. You held two.'},
+    {t:cn+' go quiet. They say "okay" the way people do when they have decided something for themselves.',m:'You defaulted to the more established source.',sub:'The second article is still on their phone.'},
+    {t:cn+' seem oddly relieved. "That is what I thought too. I just did not want to say it first."',m:'You stayed uncertain rather than resolving it in either direction.',sub:'Genuine uncertainty is not the same as being uninformed.'},
+    {t:cn+' pause. Then: "I think the independent one is more honest about what it does not know."',m:'You turned it back to them — and they answered more precisely than you expected.',sub:'They found the second article for a reason. They already had a view.'}
+  ]
+  var r=res[S.b2d]||res[0]
+  p(r.t,200);p('They walk away. You stand there for a moment.',1000)
+  setTimeout(function(){
+    mirror('What this reveals about your update pattern',r.m,r.sub)
+    nxt('Beat 3 → An encounter',nextBeat)
+  },1900)
+}
+
+function b3p0(){
+  var cast2=CAST[2]||{name:'Someone',role:'an affected person',bio:'',tension:'They give you a small nod.'}
+  p('A normal morning. People going about their day.',300)
+  p('You see '+cast2.name+'. '+(cast2.bio||'')+' '+(cast2.tension||''),1100)
+  setTimeout(function(){
+    p('You have read multiple articles about this story. '+cast2.name+' has appeared in some of them — described as a category, never quoted by name.',1600)
+    p('This is the first time you have noticed the shape of what is missing.',2500)
+    setTimeout(function(){ctn('Continue →',function(){phase=1;render();})},3400)
+  },300)
+}
+
+function b3p1(){
+  p('You have read every article you could find.',200)
+  p('<strong>'+((CAST[2]&&CAST[2].name)||'The people most affected')+' have appeared in the coverage.</strong> Never quoted directly. Never named. Always described collectively.',900)
+  p('This is the first time you have noticed the shape of what is absent — not wrong information, but absent information. The difference matters.',1700)
+  setTimeout(function(){
+    scryFull()
+    setTimeout(function(){ctn('Continue →',function(){phase=2;render();})},600)
+  },800)
+}
+
+function b3p2(){
+  var silentCount=STORY.scry.silent.length
+  var firstSilent=STORY.scry.silent[0]||'One'
+  var cast2Name=(CAST[2]&&CAST[2].name)||'the affected person'
+  choices('SCRY shows '+silentCount+' significant outlets went completely silent on this story. '+firstSilent+' covers this kind of story as a core beat. They published nothing.',
+    'Silence in coverage is not the same as silence in the world.',
+    ['I go back and check who was actually quoted, by name, in everything I have read.',
+     'Silence does not prove anything on its own. I keep moving forward.',
+     'I ask '+cast2Name+' directly — what have they been told officially?',
+     'I note it. I am not sure what to do with it, but I will not ignore it.'],
+    function(i){
+      S.b3d=i
+      GE.decision('silence_registration',{roundIndex:3,choiceIndex:i,silentPublishers:STORY.scry.silent})
+      phase=3;render()
+    })
+}
+
+function b3p3(){
+  var cast2Name=(CAST[2]&&CAST[2].name)||'They'
+  var res=[
+    {t:'You run back through the articles. '+cast2Name+' and everyone like them are described collectively in every one. Not one outlet gave a direct quote.',m:'You noticed the systematic absence of named sources from the affected community.',sub:'The absence is not an accident. It reflects which sources journalists called.'},
+    {t:'You keep moving. The story is still developing.',m:'You moved past the silence without registering it as a signal.',sub:'Absence in coverage is harder to notice than presence. Most readers do what you did.'},
+    {t:cast2Name+' tells you: they have not been informed officially. They heard about it from someone who heard it from someone else.',m:'You sought a primary source that no article had sought.',sub:'Direct testimony from an affected person. No outlet had it.'},
+    {t:'In the next conversation you have, you ask: if a story is being covered by everyone, who are we allowed to assume is being listened to?',m:'You turned the absence into a question.',sub:'That question will stay with you.'}
+  ]
+  var r=res[S.b3d]||res[0]
+  p(r.t,200)
+  setTimeout(function(){
+    mirror('What this reveals about your silence sensitivity',r.m,r.sub)
+    nxt('Beat 4 → '+((CAST[1]&&CAST[1].name)||'A contact')+' messages',nextBeat)
+  },1400)
+}
+
+function b4p0(){
+  var sc=getSceneDesc(4)
+  var isEvening=sc&&(sc.time==='blue_night'||sc.palette==='blue_night'||sc.palette==='deep_evening')
+  var b4intro=isEvening?'Evening. Late. The work is still on the table.':'Later. There is still work to do.'
+  p(b4intro,200)
+  p('Her phone buzzes.',900)
+  setTimeout(function(){ctn('Continue →',function(){phase=1;render();})},1800)
+}
+
+function b4p1(){
+  var cast1=CAST[1]||{name:'Devika'}
+  p(cast1.name+'. Three messages, sent in quick succession.',200)
+  var src0pub=(STORY.srcs[0]&&STORY.srcs[0].pub)||'Source A'
+  var src1pub=(STORY.srcs[1]&&STORY.srcs[1].pub)||'Source B'
+  setTimeout(function(){typeThen([
+    {who:'d',html:'<div class="ctxt">I found something</div>'},
+    {who:'d',html:'<div class="cmp" style="margin:6px 0"><div class="cmp-hd">Three papers. One paragraph. Word for word.</div><div style="padding:12px 14px;font-size:12px;line-height:1.78;color:var(--ink2)"><div style="font-family:\'Courier New\',monospace;font-size:8.5px;color:var(--ink4);margin-bottom:3px">'+src0pub+':</div><p style="margin-bottom:8px">"...<span class="match">'+STORY.wire_sentence+'</span>..."</p><div style="font-family:\'Courier New\',monospace;font-size:8.5px;color:var(--ink4);margin-bottom:3px">'+src1pub+':</div><p style="margin-bottom:8px">"...<span class="match">'+STORY.wire_sentence+'</span>..."</p><div style="font-family:\'Courier New\',monospace;font-size:8.5px;color:var(--ink4);margin-bottom:3px">A third publication:</div><p>"...<span class="match">'+STORY.wire_sentence+'</span>..."</p></div></div>'},
+    {who:'d',html:'<div class="ctxt">this is the EXACT same sentence in three papers. different bylines. where did this come from</div>'}
+  ],function(){
+    p('The meeting is in less than twenty-four hours.',400)
+    scryAnno()
+    setTimeout(function(){ctn('Continue →',function(){phase=2;render();})},600)
+  })},400)
+}
+
+function b4p2(){
+  var cast1Name=(CAST[1]&&CAST[1].name)||'They'
+  choices(cast1Name+' found what you did not. How does this change what you say tomorrow?',null,
+    ['This changes what I can claim as independently verified. Three papers are not three sources.',
+     'Concerning — but the core facts are probably still correct.',
+     'I want to trace where this sentence actually originated before I speak.',
+     'I will name it in my statement. Transparency about sourcing matters.'],
+    function(i){
+      S.b4d=i
+      GE.decision('synthesis_edit',{roundIndex:5,editsCount:0})
+      phase=3;render()
+    })
+}
+
+function b4p3(){
+  var cast1Name=(CAST[1]&&CAST[1].name)||'They'
+  var res=[
+    {t:'You sit with the implication — three masthead bylines, one source of record. The appearance of independent coverage without the substance.',m:'You understood the structural problem: convergence of phrasing signals convergence of sourcing.',sub:'This is what media researchers call source capture.'},
+    {t:cast1Name+' replies: "but we do not actually know that, do we?" They are right.',m:'You separated the factual claims from the sourcing failure — which is correct.',sub:'The sourcing failure does not make the facts wrong. It does mean no one independently verified them.'},
+    {t:'You trace the sentence to its origin. It was always there in the source document. Nobody traced it.',m:'You traced the sentence to its origin — a skill most readers never apply.',sub:'The source was public. The tracing just required the question to be asked.'},
+    {t:'You draft one line for tomorrow: asking that projections cited in coverage be independently verified.',m:'You turned the wire pattern into a concrete request for accountability.',sub:'Naming a sourcing failure in a public forum is media literacy applied to civic action.'}
+  ]
+  var r=res[S.b4d]||res[0]
+  p(r.t,200)
+  p('<em>'+((LOC&&LOC.name)||'The affected place')+' is out there somewhere. She thinks about it.</em>',1100,'aside')
+  setTimeout(function(){
+    mirror('What this reveals about your source independence literacy',r.m,r.sub)
+    nxt('Beat 5 → The meeting',nextBeat)
+  },2000)
+}
+
+function b5p0(){
+  var cast0=CAST[0]||{name:'A colleague'}
+  var cast2=CAST[2]||{name:'Someone affected'}
+  p('The meeting. A room full of people. '+cast0.name+' is near the back.',200)
+  p('<strong>'+cast2.name+' is in the third row.</strong> You do not think they have been to a meeting like this before.',900)
+  p('You are on the list to speak.',1800)
+  setTimeout(function(){ctn('Continue →',function(){phase=1;render();})},2600)
+}
+
+function b5p1(){
+  var src=STORY.srcs[S.src>-1?S.src:0]
+  var srcFr=src.fr
+  var notedSilence=S.b3d===0||S.b3d===2
+  var detectedWire=S.b4d===0||S.b4d===2||S.b4d===3
+  var readMultiple=S.src===2
+  var locName=(LOC&&LOC.name)||'the affected community'
+  var alts={
+    l1:['The headline projection represents a genuine opportunity. I have seen few things of this scale, and I do not want to be the voice that talks us out of it.',
+        'The projections are significant. I also know that people at '+locName+' have received no formal communication about what happens to them. Both things are true.',
+        'The investment is real. The question of who bears its costs has not been answered in any of the coverage I have read.'],
+    l2:['The relevant authorities have stated their commitment to the process. I trust that will be followed.',
+        'I formally ask this group to request a direct consultation with the people at '+locName+' before any decision is taken. They are the people most affected. They should be in this room.',
+        'I do not think we should decide tonight. The people most affected have not been consulted.'],
+    l3:['I support moving forward with transparency.',
+        'I would ask that the projections cited in coverage be independently verified. The same sentence appeared in three publications under three different bylines. It originates in the official source document.',
+        'A contact found that three papers printed the exact same sentence without attribution. I ask the group to note this when weighing what it has read.']
+  }
+  var idx={
+    l1: srcFr>.4?0:(readMultiple||srcFr<-.1)?1:2,
+    l2: notedSilence?1:0,
+    l3: detectedWire?1:0
+  }
+  p('Your name is called.',200)
+  p('<span style="font-family:\'Courier New\',monospace;font-size:11px;color:var(--ink4)">This statement was built from your choices this week. The underlined phrases can be changed — tap to cycle through alternatives.</span>',800)
+  setTimeout(function(){
+    var stmt=document.createElement('div');stmt.className='stmt'
+    function mkEd(key){
+      var span=document.createElement('span');span.className='ed';span.textContent=alts[key][idx[key]]
+      span.onclick=function(){idx[key]=(idx[key]+1)%alts[key].length;span.textContent=alts[key][idx[key]];span.classList.toggle('changed',idx[key]>0);S.edits++;}
+      return span
+    }
+    var p1=document.createElement('p');p1.innerHTML=(STORY.title||'This story')+' is a significant matter. ';p1.appendChild(mkEd('l1'));stmt.appendChild(p1)
+    var p2=document.createElement('p');p2.appendChild(mkEd('l2'));stmt.appendChild(p2)
+    var p3=document.createElement('p');p3.appendChild(mkEd('l3'));stmt.appendChild(p3)
+    N().insertBefore(stmt,$('hw'))
+    setTimeout(function(){ctn('Speak →',function(){
+      GE.decision('synthesis_edit',{roundIndex:5,editsCount:S.edits})
+      phase=2;render()
+    })},400)
+    sd()
+  },1300)
+}
+
+function b5p2(){
+  p('The room is quiet when she finishes.',200)
+  p(((CAST[2]&&CAST[2].name)||'The affected person')+' is looking at their hands.',1000)
+  setTimeout(function(){
+    choices('What do you push for?',null,
+      ['An independent review before any decision. The people at '+((LOC&&LOC.name)||'the affected location')+' have not been formally consulted.',
+       'Conditional approval — the projections are real, but terms must be formal and binding before anything proceeds.',
+       'Proceed. We have been waiting for something like this for too long.'],
+      function(i){
+        S.b5d=i
+        GE.decision('vote',{roundIndex:6,choiceIndex:i})
+        var result=GE.finish()
+        phase=3;render()
+      })
+  },2100)
+}
+
+function b5p3(){
+  var v=S.b5d>-1?S.b5d:1
+  var stats=window._communityStats
+  var outs=[
+    {t:'Independent review demanded',d:'Most players this session read widely, noticed the silence map, and traced or named the wire sentence. The meeting produced a motion for independent assessment.',c:'var(--green)'},
+    {t:'Conditional approval',d:'Mixed reading, mixed outcome. Approval with stated conditions. A common real-world result.',c:'var(--amber)'},
+    {t:'Proceed',d:'The dominant framing, amplified by the convergent wire sentence, shaped most decisions. The process continues.',c:'var(--red)'}
+  ]
+  var defaultSims=[35,42,23]
+  var sims=[
+    (stats&&stats.gapDistribution&&stats.gapDistribution.independent_review)||defaultSims[0],
+    (stats&&stats.gapDistribution&&stats.gapDistribution.conditional)||defaultSims[1],
+    (stats&&stats.gapDistribution&&stats.gapDistribution.approve)||defaultSims[2],
+  ]
+  var totalSessions=(stats&&stats.total)||847
+
+  p('The meeting runs long.',200)
+  p('<em>Walking out, she thinks about '+((LOC&&LOC.name)||'the place')+' — and how much of her understanding came from what she happened to read first.</em>',1000,'aside')
+  p('She makes the call she has been putting off. It answers on the second ring.',2000)
+
+  setTimeout(function(){
+    var co=document.createElement('div');co.className='ocard'
+    co.innerHTML='<span class="ocard-tag" style="color:var(--ink3)">What '+totalSessions+' players believed this session</span><div class="obar"><div class="ob" id="ob0" style="width:0;background:var(--green)"></div><div class="ob" id="ob1" style="width:0;background:var(--amber)"></div><div class="ob" id="ob2" style="width:0;background:var(--red)"></div></div><div class="oleg"><div class="ole"><div class="olc" style="background:var(--green)"></div>Independent review '+sims[0]+'%</div><div class="ole"><div class="olc" style="background:var(--amber)"></div>Conditional '+sims[1]+'%</div><div class="ole"><div class="olc" style="background:var(--red)"></div>Proceed '+sims[2]+'%</div></div>'
+    N().insertBefore(co,$('hw'))
+
+    var your=document.createElement('div');your.className='ocard'
+    your.innerHTML='<span class="ocard-tag" style="color:'+outs[v].c+'">Your outcome</span><div class="ocard-title">'+outs[v].t+'</div><div class="ocard-desc">'+outs[v].d+'</div>'
+    N().insertBefore(your,$('hw'))
+
+    var srcNames=[(STORY.srcs[0]&&STORY.srcs[0].pub)||'the official source',(STORY.srcs[1]&&STORY.srcs[1].pub)||'the mainstream paper','multiple sources','a colleague\'s take']
+    var updateLabels=['held both framings without collapsing','defaulted to the established outlet','stayed genuinely uncertain','reflected it back']
+    var silenceLabels=['noticed the absence of named sources','moved past the silence','sought direct testimony','turned the absence into a question']
+    var wireLabels=['understood three bylines does not mean three sources','held the sourcing failure lightly','traced the sentence to its origin','named the sourcing failure publicly']
+
+    var srcIdx=S.src>-1?S.src:0
+    var pr=document.createElement('div');pr.className='profile'
+    pr.innerHTML='<div class="profile-lbl">The shape of how you read this story</div><div class="prow"><div class="prow-dot" style="background:'+STORY.srcs[srcIdx].col+'"></div><div><div class="prow-label">Trust hierarchy</div><div class="prow-val">You read <strong>'+(srcNames[S.src>-1?S.src:1])+'</strong> first. Your first read set the frame for everything that followed.</div></div></div><div class="prow"><div class="prow-dot" style="background:var(--blue)"></div><div><div class="prow-label">How you update</div><div class="prow-val">When shown the second article, you <em>'+(updateLabels[S.b2d>-1?S.b2d:0])+'</em>.</div></div></div><div class="prow"><div class="prow-dot" style="background:var(--green)"></div><div><div class="prow-label">Silence sensitivity</div><div class="prow-val">You <em>'+(silenceLabels[S.b3d>-1?S.b3d:1])+'</em>. SCRY showed major outlets went silent on a story in their core beat.</div></div></div><div class="prow"><div class="prow-dot" style="background:var(--red)"></div><div><div class="prow-label">Source attribution</div><div class="prow-val">When the wire sentence was found, you <em>'+(wireLabels[S.b4d>-1?S.b4d:0])+'</em>.</div></div></div><div class="prow"><div class="prow-dot" style="background:var(--accent)"></div><div><div class="prow-label">Synthesis under pressure</div><div class="prow-val">'+(S.edits>0?'You changed '+S.edits+' phrase'+(S.edits>1?'s':'')+' — the edits reflect what you trusted and what you did not.':'You left your statement as drafted — the first read held.')+'</div></div></div>'
+    N().insertBefore(pr,$('hw'))
+
+    var prox=document.createElement('div');prox.className='proximity'
+    prox.innerHTML='<div class="proximity-lbl">One more thing</div><div class="proximity-txt">You had a personal stake in this story. <strong>'+((CHAR&&CHAR.personal_stake)||'Someone you know is directly affected by what is being decided.')+'</strong><br><br>'+((CHAR&&CHAR.conflict)||'The question is not whether you were affected. It is whether you knew you were, and named it to yourself.')+'<br><br><em>Most readers who respond to news stories do so with some degree of personal stake. The question is whether you knew you were, and named it to yourself.</em></div>'
+    N().insertBefore(prox,$('hw'))
+
+    nxt('Play again → a different story',restart)
+    setTimeout(function(){
+      $('ob0').style.width=sims[0]+'%';$('ob1').style.width=sims[1]+'%';$('ob2').style.width=sims[2]+'%'
+      sd()
+    },600)
+  },3000)
+}
+
+function nextBeat(){
+  GE.beatComplete(beat)
+  beat++;phase=0
+  var desc=getSceneDesc(beat)
+  var palette=(desc&&desc.palette)||'warm_dawn'
+  var timeLabels={warm_dawn:'Early morning',blue_night:'Evening',amber_evening:'Late afternoon',grey_overcast:'Morning',harsh_noon:'Noon',deep_evening:'Night'}
+  var timeStr=(timeLabels[palette]||'Later')+' · Beat '+beat+' of 5'
+  setScene(beat,timeStr,function(){render()})
+}
+
+function restart(){
+  beat=1;phase=0
+  S.src=S.b1r=S.b2d=S.b3d=S.b4d=S.b5d=S.anno=-1;S.edits=0;S.touchedPersonal=false
+  setScene(1,((STORY&&STORY.location_name)||'Vasantpur')+'  ·  Beat 1',function(){render()})
+}
+
+function tH(){ho=!ho;$('htxt').classList.toggle('on',ho);$('htb').textContent=ho?'↑ hide':'? hint'}
+function pw(btn){
+  if(wplay)return;wplay=true
+  var w=btn.closest('.cbub').querySelector('.vnw');if(!w)return
+  var bars=w.querySelectorAll('.vb')
+  bars.forEach(function(b,i){b.classList.add('on');b.style.animation='wba '+(0.4+Math.random()*0.7)+'s ease infinite '+(i*0.04)+'s';})
+  setTimeout(function(){bars.forEach(function(b){b.classList.remove('on');b.style.animation=''});wplay=false},2900)
+}
+
+
+// ═══════════════════════════════════════════════════════════════════
+// INIT — Wait for scenario via postMessage
+// ═══════════════════════════════════════════════════════════════════
+
+// Show loading state immediately
+var loader=document.createElement('div')
+loader.id='loading';loader.className='p in'
+loader.innerHTML='<span style="font-family:\'Courier New\',monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink4)">Loading today\'s story...</span>'
+N().insertBefore(loader,$('hw'))
+
+$('scene').innerHTML='<div id="sfade" style="position:absolute;inset:0;background:var(--page);opacity:0;pointer-events:none;transition:opacity .65s;z-index:2"></div><div id="stime" style="position:absolute;bottom:0;left:0;right:0;z-index:3;padding:10px 18px 12px;background:linear-gradient(transparent,rgba(15,13,11,.96));font-family:\'Courier New\',monospace;font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--ink3)">Loading...</div>'+buildDefaultScene()
+bw()
+
+// ─────────────────────────────────────────────────────────────────
+// MESSAGE LISTENER
+// Accepts messages from any origin ('*') since iframe origin can be
+// 'null' in some environments. Filters by message type instead.
+// ─────────────────────────────────────────────────────────────────
+window.addEventListener('message', function(e) {
+  // No origin check — we filter by message type
+  // This is safe because messages contain no sensitive data
+
+  if (!e.data || !e.data.type) return
+
+  if (e.data.type === 'vasantpur:setScenario') {
+    STORY = e.data.payload
+    CHAR  = STORY.character || {}
+    LOC   = STORY.human_scale_location || {}
+    CAST  = STORY.supporting_cast || []
+
+    var loader = $('loading')
+    if (loader) loader.remove()
+
+    GE.init(STORY, null)
+
+    var desc    = getSceneDesc(1)
+    var location = STORY.location_name || (CHAR.name && CHAR.name.split(' ')[1]) || 'Vasantpur'
+    var palette  = (desc && desc.palette) || 'warm_dawn'
+    var timeLabelMap = {warm_dawn:'Early morning',harsh_noon:'Morning',amber_evening:'Evening',blue_night:'Night',grey_overcast:'Morning',deep_evening:'Night'}
+    var timeLabel = timeLabelMap[palette] || 'Morning'
+
+    setScene(1, timeLabel + ' · ' + location, function() {
+      $('tbb').textContent = 'Beat 1 of 5'
+      dots()
+      render()
+    })
+    return
+  }
+
+  if (e.data.type === 'vasantpur:communityStats') {
+    window._communityStats = e.data.payload
+  }
+})
+
+// Signal readiness to parent
+window.parent.postMessage({ type: 'vasantpur:ready' }, '*')
+</script>
+</body>
+</html>
