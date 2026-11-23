@@ -14,7 +14,7 @@ import {
 import {
   Home, Newspaper, BarChart3, Telescope,
   LogIn, LogOut, ClipboardCheck, Lock,
-  Building2, Radio, FileText, Users,
+  Building2, Radio, FileText, Users, Youtube,
 } from "lucide-react"
 
 export function AppSidebar() {
@@ -25,6 +25,7 @@ export function AppSidebar() {
   const mainItems = [
     { title: "Home",             url: "/",         icon: Home,      end: true  },
     { title: "Article Explorer", url: "/explorer", icon: Newspaper, end: false },
+    { title: "Watch",            url: "/watch",    icon: Youtube,   end: false },
     { title: "Insights",         url: "/insights", icon: BarChart3, end: false },
   ]
 
