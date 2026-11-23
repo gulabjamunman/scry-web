@@ -1,8 +1,9 @@
 import { useEffect, useState, useMemo } from "react"
 import { useNavigate } from "react-router-dom"
 import { formatDistanceToNow, parseISO } from "date-fns"
-import { Search, ChevronRight, Clock, Layers, Radio, Eye, VolumeX, Lock } from "lucide-react"
-import { getRecentClusters, getTrendingClusters, type ClusterListItem } from "@/lib/api"
+import { Search, ChevronRight, ChevronDown, Clock, Layers, Radio, Eye, VolumeX, Lock, Flame } from "lucide-react"
+import { getRecentClusters, getTrendingClusters, getMajorClusters, type ClusterListItem } from "@/lib/api"
+import LifecycleBadge from "@/components/LifecycleBadge"
 import { useAuth } from "@/lib/auth"
 import { useFreeCluster } from "@/contexts/FreeClusterContext"
 
@@ -115,7 +116,8 @@ function ClusterCard({ cluster, locked }: { cluster: ClusterListItem; locked: bo
         <div className="p-5 flex items-start gap-4">
           <div className="flex-1 min-w-0 space-y-2">
             <div className="flex items-center gap-2 flex-wrap">
-              {cluster.is_active && (
+              <LifecycleBadge lifecycle={cluster.importance_tier ? cluster.lifecycle : null} />
+              {cluster.is_active && !cluster.importance_tier && (
                 <span className="flex items-center gap-1 text-xs text-green-600 dark:text-green-400 font-medium">
                   <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />Live
                 </span>
@@ -178,20 +180,33 @@ export default function ClusterListPage({ trending = false }: { trending?: boole
   const [topic,    setTopic]    = useState("All")
 
   const [rawClusters, setRawClusters] = useState<ClusterListItem[]>([])
+  // "major" shows only the stories the pipeline ranks as major news right now.
+  const [view,       setView]       = useState<"major" | "all">("major")
+  const [majorReady, setMajorReady] = useState(false)
+  const [showSoft,   setShowSoft]   = useState(false)
 
   // Fetch clusters
   useEffect(() => {
     setLoading(true)
-    const fn = trending ? getTrendingClusters : getRecentClusters
-    fn(200)
-      .then(setRawClusters)
+    const load = async () => {
+      if (!trending && view === "major") {
+        const major = await getMajorClusters()
+        if (major && major.length > 0) { setMajorReady(true); return major }
+        setView("all")                      // ranking not set up yet: show everything
+        return null
+      }
+      return (trending ? getTrendingClusters : getRecentClusters)(200)
+    }
+    load()
+      .then(rows => { if (rows) setRawClusters(rows) })
       .catch(console.error)
       .finally(() => setLoading(false))
-  }, [trending])
+  }, [trending, view])
 
   // Sort: free clusters first — runs when clusters, ready, or isFree change
   useEffect(() => {
     if (!ready) return
+    if (view === "major" && !trending) { setClusters(rawClusters); return }   // already ranked by importance
     const sorted = [...rawClusters].sort((a, b) => {
       const af = isFree(a.id) ? 0 : 1
       const bf = isFree(b.id) ? 0 : 1
@@ -199,7 +214,7 @@ export default function ClusterListPage({ trending = false }: { trending?: boole
       return new Date(b.last_seen).getTime() - new Date(a.last_seen).getTime()
     })
     setClusters(sorted)
-  }, [rawClusters, ready, isFree])
+  }, [rawClusters, ready, isFree, view, trending])
 
   const filtered = useMemo(() => clusters.filter(c => {
     const matchTopic  = topic === "All" || c.dominant_topic === topic
@@ -210,6 +225,9 @@ export default function ClusterListPage({ trending = false }: { trending?: boole
   }), [clusters, topic, search])
 
   const isLocked = (c: ClusterListItem) => !isLoggedIn && !isFree(c.id)
+  const showingMajor = view === "major" && !trending
+  const hardNews = showingMajor ? filtered.filter(c => c.importance_tier !== "major_soft") : filtered
+  const softNews = showingMajor ? filtered.filter(c => c.importance_tier === "major_soft") : []
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 lg:px-6 space-y-6">
@@ -224,6 +242,8 @@ export default function ClusterListPage({ trending = false }: { trending?: boole
         <p className="text-sm text-muted-foreground">
           {trending
             ? "Active story clusters ranked by coverage volume in the last 72 hours."
+            : showingMajor
+            ? "The biggest stories right now: covered by many outlets, still moving, and on Google News' top stories."
             : "Story clusters observed across 17 Indian news publishers."
           }
         </p>
@@ -234,10 +254,27 @@ export default function ClusterListPage({ trending = false }: { trending?: boole
         )}
         {!loading && (
           <p className="text-xs text-muted-foreground font-mono">
-            {clusters.length} clusters indexed
+            {showingMajor ? `${clusters.length} major stories` : `${clusters.length} clusters indexed`}
           </p>
         )}
       </div>
+
+      {/* Major / all switch */}
+      {!trending && majorReady && (
+        <div className="inline-flex rounded-lg border bg-card p-0.5 text-xs">
+          {([["major", "Major now"], ["all", "All stories"]] as const).map(([v, label]) => (
+            <button
+              key={v}
+              onClick={() => setView(v)}
+              className={`px-3 py-1.5 rounded-md transition-colors flex items-center gap-1.5 ${
+                view === v ? "bg-primary/10 text-primary font-medium" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {v === "major" && <Flame className="h-3 w-3" />}{label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Search */}
       <div className="flex items-center gap-2 rounded-lg border bg-card px-3 py-2 shadow-sm focus-within:ring-2 focus-within:ring-primary/30 transition">
@@ -291,9 +328,25 @@ export default function ClusterListPage({ trending = false }: { trending?: boole
       )}
 
       {/* Cluster list */}
-      {!loading && filtered.length > 0 && (
+      {!loading && hardNews.length > 0 && (
         <div className="space-y-2">
-          {filtered.map(c => (
+          {hardNews.map(c => (
+            <ClusterCard key={c.id} cluster={c} locked={isLocked(c)} />
+          ))}
+        </div>
+      )}
+
+      {/* Sport, entertainment and business: their own collapsed lane */}
+      {!loading && softNews.length > 0 && (
+        <div className="space-y-2">
+          <button
+            onClick={() => setShowSoft(v => !v)}
+            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          >
+            {showSoft ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
+            Sport, entertainment and business ({softNews.length})
+          </button>
+          {showSoft && softNews.map(c => (
             <ClusterCard key={c.id} cluster={c} locked={isLocked(c)} />
           ))}
         </div>
