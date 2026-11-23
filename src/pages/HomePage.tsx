@@ -158,7 +158,7 @@ export default function HomePage() {
           <span className="text-sm font-semibold tracking-tight">SCRY</span>
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground border rounded-full px-2.5 py-0.5">
             <Radio className="h-2.5 w-2.5 text-green-500 animate-pulse" />
-            <span>Live · 17 publishers · updated every 2h</span>
+            <span>Live · 17 publishers · updated every 6h</span>
           </div>
         </div>
         <h1 className="text-3xl lg:text-4xl font-bold tracking-tight leading-tight">
