@@ -1017,6 +1017,21 @@ export type ClusterListItem = {
   avg_fact_ratio: number | null          // added — used by DraftComparison
   narrative_arc: NarrativeArc | null     // added — used by SignalsDashboard
   is_active: boolean
+  // Set by the pipeline's rank_stories.py; absent until it has run.
+  importance_score?: number | null
+  importance_tier?: "major" | "major_soft" | null
+  lifecycle?: "breaking" | "developing" | "settled" | null
+  importance_signals?: ImportanceSignals | null
+}
+
+export type ImportanceSignals = {
+  publishers_24h: number
+  cross_spectrum: boolean
+  google_news_sim: number
+  articles_last_6h: number
+  articles_prev_6h: number
+  wire: boolean
+  staying_power: boolean
 }
 
 /* ============================================================
@@ -1316,6 +1331,52 @@ export async function getRecentClusters(limit = 20): Promise<ClusterListItem[]> 
     avg_fact_ratio:        row.avg_fact_ratio         ?? null,
     narrative_arc:         row.narrative_arc          ?? null,
     is_active:             row.is_active              ?? false,
+  }))
+}
+
+/* Major stories: the few clusters rank_stories.py marks as major news right now.
+   Returns null when the ranking columns don't exist yet, so callers can fall back. */
+export async function getMajorClusters(): Promise<ClusterListItem[] | null> {
+  const { data, error } = await supabase
+    .from("story_clusters")
+    .select(`
+      id, title, summary, dominant_topic,
+      first_seen, last_seen,
+      article_count, publisher_count, silent_count,
+      publishers, publishers_silent,
+      avg_framing_direction, avg_intensity,
+      avg_language_intensity, avg_fact_ratio,
+      narrative_arc, is_active,
+      importance_score, importance_tier, lifecycle, importance_signals
+    `)
+    .in("importance_tier", ["major", "major_soft"])
+    .order("importance_score", { ascending: false })
+    .limit(30)
+
+  if (error) { console.warn("getMajorClusters:", error.message); return null }
+
+  return (data || []).map((row) => ({
+    id:                    row.id,
+    title:                 row.title                 || "Untitled cluster",
+    summary:               row.summary               || null,
+    dominant_topic:        row.dominant_topic        || null,
+    first_seen:            row.first_seen,
+    last_seen:             row.last_seen,
+    article_count:         row.article_count         || 0,
+    publisher_count:       row.publisher_count       || 0,
+    silent_count:          row.silent_count          || 0,
+    publishers:            row.publishers            || [],
+    publishers_silent:     row.publishers_silent     || [],
+    avg_framing_direction: row.avg_framing_direction ?? null,
+    avg_intensity:         row.avg_intensity         ?? null,
+    avg_language_intensity:row.avg_language_intensity ?? null,
+    avg_fact_ratio:        row.avg_fact_ratio         ?? null,
+    narrative_arc:         row.narrative_arc          ?? null,
+    is_active:             row.is_active              ?? false,
+    importance_score:      row.importance_score       ?? null,
+    importance_tier:       row.importance_tier        ?? null,
+    lifecycle:             row.lifecycle              ?? null,
+    importance_signals:    row.importance_signals     ?? null,
   }))
 }
 

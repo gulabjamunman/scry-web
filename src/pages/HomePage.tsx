@@ -2,6 +2,8 @@ import { useEffect, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { ArrowRight, Telescope, Newspaper, BarChart3, Eye, ClipboardCheck, Radio } from "lucide-react"
 import { supabase } from "@/lib/supabase"
+import { getMajorClusters, type ClusterListItem } from "@/lib/api"
+import LifecycleBadge, { momentumText } from "@/components/LifecycleBadge"
 
 interface Cluster {
   id: string
@@ -110,6 +112,7 @@ export default function HomePage() {
   const [articleCount,  setArticleCount]  = useState<number | null>(null)
   const [clusterCount,  setClusterCount]  = useState<number | null>(null)
   const [loading,       setLoading]       = useState(true)
+  const [major,         setMajor]         = useState<ClusterListItem[]>([])
 
   useEffect(() => {
     async function load() {
@@ -128,6 +131,10 @@ export default function HomePage() {
           setClusters(data)
           setStoryOfDay(data[0])
         }
+
+        // Major stories, when the pipeline's ranking is set up
+        const ranked = (await getMajorClusters())?.filter(c => c.importance_tier === "major") ?? []
+        setMajor(ranked)
 
         const [artRes, clsRes] = await Promise.all([
           supabase.from("articles").select("id", { count: "exact", head: true }),
@@ -182,6 +189,31 @@ export default function HomePage() {
           </div>
         </div>
       </div>
+
+      {/* Major now */}
+      {!loading && major.length > 0 && (
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-mono tracking-widest uppercase text-muted-foreground font-medium">Major now</span>
+            <button onClick={() => navigate("/clusters")} className="text-[11px] text-primary hover:underline flex items-center gap-1">
+              All major stories <ArrowRight className="h-3 w-3" />
+            </button>
+          </div>
+          <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1 snap-x">
+            {major.slice(0, 8).map(c => (
+              <button
+                key={c.id}
+                onClick={() => navigate(`/cluster/${c.id}`)}
+                className="snap-start shrink-0 w-64 text-left rounded-xl border bg-card p-4 space-y-2 hover:bg-muted/30 transition-colors"
+              >
+                <LifecycleBadge lifecycle={c.lifecycle} />
+                <p className="text-sm font-semibold leading-snug line-clamp-3">{c.title}</p>
+                <p className="text-[11px] text-muted-foreground">{momentumText(c)}</p>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Story of the day */}
       {!loading && storyOfDay && (
