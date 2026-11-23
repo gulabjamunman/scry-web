@@ -35,6 +35,8 @@ import NewsroomGuard              from "./components/NewsroomGuard";
 
 // ── Intelligence features (now served under /newsroom/*) ──────────────────
 import ClusterListPage            from "./pages/ClusterListPage";
+import WatchPage            from "./pages/WatchPage";
+import WatchVideoPage            from "./pages/WatchVideoPage";
 import NarrativeIntelligencePage  from "./pages/NarrativeIntelligencePage";
 import SignalsDashboard           from "./pages/SignalsDashboard";
 import DraftComparison            from "./pages/DraftComparison";
@@ -115,6 +117,8 @@ function AppLayout() {
 
               {/* ── Public Observatory — 2 clusters free, rest gated ─── */}
               <Route path="/clusters"           element={<ClusterListPage />} />
+              <Route path="/watch"              element={<WatchPage />} />
+              <Route path="/watch/:id"          element={<WatchVideoPage />} />
               <Route path="/clusters/trending"  element={<ClusterListPage trending />} />
               <Route path="/cluster/:clusterId" element={<NarrativeIntelligencePage />} />
 
